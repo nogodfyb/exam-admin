@@ -1,15 +1,18 @@
 package com.fyb.exam.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import java.io.Serializable;
+import java.util.List;
+
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author fyb
@@ -32,6 +35,10 @@ public class Menu implements Serializable {
     private String path;
 
     private Integer sortOrder;
+
+    @TableField(exist = false)
+    private List<Menu> children;
+
 
 
 }
