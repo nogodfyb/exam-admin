@@ -95,7 +95,7 @@
   <el-dialog
     title="上传数据"
     :visible.sync="uploadDialogVisible"
-    width="30%" @close="uploadDialogVisible=false"
+    width="30%" @close="uploadDialogClosed"
   >
     <el-upload
       class="upload-demo"
@@ -117,6 +117,7 @@ export default {
       // 获取用户列表的参数对象
       queryInfo: {
         query: '',
+        // 当前的页数
         // 当前的页数
         pageNum: 1,
         // 当前每页显示多少条数据
@@ -205,6 +206,9 @@ export default {
     },
     editDialogClosed () {
       this.$refs.editFormRef.resetFields()
+    },
+    uploadDialogClosed () {
+      this.getUserList()
     },
     editUser () {
       this.$refs.editFormRef.validate(async (valid) => {

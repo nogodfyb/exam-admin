@@ -12,6 +12,9 @@ import Productivitys from '../components/machine/Productivitys.vue'
 import Plans from '../components/plan/Plans.vue'
 import MachinePlans from '../components/plan/MachinePlans.vue'
 import AssignPlans from '../components/plan/AssignPlans.vue'
+import Logins from '../components/user/Logins'
+import ExamRecords from '../components/user/ExamRecords'
+import Topics from '../components/topic/Topics'
 
 Vue.use(VueRouter)
 
@@ -25,6 +28,9 @@ const routes = [
     children: [
       { path: '/welcome', component: Welcome },
       { path: '/users', component: Users },
+      { path: '/logins', component: Logins },
+      { path: '/records', component: ExamRecords },
+      { path: '/topics', component: Topics },
       { path: '/rights', component: Rights },
       { path: '/roles', component: Roles },
       { path: '/machines', component: Machines },
