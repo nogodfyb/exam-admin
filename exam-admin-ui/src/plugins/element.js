@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {
-  Button, Form, FormItem, Input, Message, Container, Header, Aside, Main, Menu,
+  Button, Form, FormItem, Input, Message, Container, Header, Aside, Main, Menu, Upload,
   Submenu, MenuItem, Breadcrumb, BreadcrumbItem, Card, Row, Col, Table, TableColumn, Switch,
   Tooltip, Pagination, Dialog, MessageBox, Tag, Tree, Select, Option, DatePicker, Progress, Link
 } from 'element-ui'
@@ -33,5 +33,6 @@ Vue.use(Option)
 Vue.use(DatePicker)
 Vue.use(Progress)
 Vue.use(Link)
+Vue.use(Upload)
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm

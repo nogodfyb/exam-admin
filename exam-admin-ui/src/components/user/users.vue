@@ -19,7 +19,7 @@
         <el-button type="primary" @click="dialogVisible=true">添加用户</el-button>
       </el-col>
       <el-col :span="3">
-        <el-button type="success" >导入用户数据</el-button>
+        <el-button type="success" @click="showUploadDialog">导入用户数据</el-button>
       </el-col>
       <el-col :span="2">
         <el-link type="info" href="http://localhost:8082/exam/employee/download">下载模板</el-link>
@@ -91,6 +91,22 @@
     <el-button type="primary" @click="editUser" >确 定</el-button>
       </span>
   </el-dialog>
+  <!-- 上传excel -->
+  <el-dialog
+    title="上传数据"
+    :visible.sync="uploadDialogVisible"
+    width="30%" @close="uploadDialogVisible=false"
+  >
+    <el-upload
+      class="upload-demo"
+      drag with-credentials
+      action="http://localhost:8082/exam/employee/upload"
+      multiple>
+      <i class="el-icon-upload"></i>
+      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__tip" slot="tip">只能上传xlsx文件，且不超过500kb</div>
+    </el-upload>
+  </el-dialog>
 </div>
 </template>
 
@@ -111,6 +127,7 @@ export default {
       // 用户对话框的可见性
       dialogVisible: false,
       editDialogVisible: false,
+      uploadDialogVisible: false,
       addForm: {
         employeeCode: '',
         password: ''
@@ -149,17 +166,6 @@ export default {
       this.queryInfo.pageNum = newPage
       this.getUserList()
     },
-    // 监听 switch 开关状态的改变
-    async userStateChanged (userInfo) {
-      const { data: res } = await this.$http.put(
-        `user/${userInfo.id}/state/${userInfo.isAlive}`
-      )
-      if (res.status !== 200) {
-        userInfo.isAlive = !userInfo.isAlive
-        return this.$message.error('更新用户状态失败！')
-      }
-      this.$message.success('更新用户状态成功！')
-    },
     addDialogClosed () {
       // 不需要自己清空数据 以下不仅清空了addForm的数据并且清空了验证遗留信息
       this.$refs.addFormRef.resetFields()
@@ -189,6 +195,13 @@ export default {
         return false
       }
       this.editForm = res.data
+    },
+    async showUploadDialog () {
+      const { data: res } = await this.$http.get('employee/isLogin')
+      if (res.status !== 200) {
+        return this.$message.error('您还未登录')
+      }
+      this.uploadDialogVisible = true
     },
     editDialogClosed () {
       this.$refs.editFormRef.resetFields()

@@ -11,11 +11,14 @@ import com.fyb.exam.common.Const;
 import com.fyb.exam.dto.AdminParam;
 import com.fyb.exam.dto.EmployeePageParam;
 import com.fyb.exam.entity.Employee;
+import com.fyb.exam.listener.UploadEmployeeListener;
 import com.fyb.exam.service.IEmployeeService;
 import com.fyb.exam.util.MD5Utils;
 import com.fyb.exam.vo.EmployExcelVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -40,6 +43,7 @@ public class EmployeeController {
     @Autowired
     private IEmployeeService employeeService;
 
+
     @PostMapping("adminLogin")
     public CommonResult<Object> adminLogin(@RequestBody AdminParam adminParam, HttpSession session){
         boolean status1 = "admin".equals(adminParam.getUsername());
@@ -51,6 +55,14 @@ public class EmployeeController {
         }
         return CommonResult.failed();
     }
+    //检验用户是否已登录
+    @GetMapping("isLogin")
+    public CommonResult<Object> isLogin(HttpSession session){
+        Object user = session.getAttribute(Const.CURRENT_USER);
+        if (user==null) {
+            return  CommonResult.failed();
+        }else return CommonResult.success(null);
+    }
 
     //分页查询
     @GetMapping("/employees")
@@ -59,7 +71,9 @@ public class EmployeeController {
         userPage.setSize(employeePageParam.getPageSize());
         userPage.setCurrent(employeePageParam.getPageNum());
         QueryWrapper<Employee> employeeQueryWrapper = new QueryWrapper<>();
-        employeeQueryWrapper.like("employee_code",employeePageParam.getQuery());
+        if(!StringUtils.isEmpty(employeePageParam.getQuery())){
+            employeeQueryWrapper.like("employee_code",employeePageParam.getQuery());
+        }
         IPage<Employee> pageResult = employeeService.page(userPage,employeeQueryWrapper);
         CommonPage<Employee> userCommonPage = CommonPage.restPage(pageResult);
         CommonResult<CommonPage<Employee>> success = CommonResult.success(userCommonPage);
@@ -116,6 +130,21 @@ public class EmployeeController {
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         EasyExcel.write(response.getOutputStream(), EmployExcelVo.class).sheet("模板").doWrite(new ArrayList());
     }
+
+    /**
+     * 文件上传
+     * <p>1. 创建excel对应的实体对象 参照{@link EmployExcelVo}
+     * <p>2. 由于默认一行行的读取excel，所以需要创建excel一行一行的回调监听器，参照{@link UploadEmployeeListener}
+     * <p>3. 直接读即可
+     */
+    @PostMapping("upload")
+    @ResponseBody
+    public String upload(MultipartFile file) throws IOException {
+        EasyExcel.read(file.getInputStream(), EmployExcelVo.class, new UploadEmployeeListener(employeeService)).sheet().doRead();
+        return "success";
+    }
+
+
 
 
 }
