@@ -4,14 +4,6 @@ import Login from '../components/Login.vue'
 import Home from '../components/Home.vue'
 import Welcome from '../components/Welcome.vue'
 import Users from '../components/user/users.vue'
-import Rights from '../components/power/Rights.vue'
-import Roles from '../components/power/Roles.vue'
-import Machines from '../components/machine/Machines.vue'
-import Products from '../components/machine/Products.vue'
-import Productivitys from '../components/machine/Productivitys.vue'
-import Plans from '../components/plan/Plans.vue'
-import MachinePlans from '../components/plan/MachinePlans.vue'
-import AssignPlans from '../components/plan/AssignPlans.vue'
 import Logins from '../components/user/Logins'
 import ExamRecords from '../components/user/ExamRecords'
 import Topics from '../components/topic/Topics'
@@ -30,15 +22,7 @@ const routes = [
       { path: '/users', component: Users },
       { path: '/logins', component: Logins },
       { path: '/records', component: ExamRecords },
-      { path: '/topics', component: Topics },
-      { path: '/rights', component: Rights },
-      { path: '/roles', component: Roles },
-      { path: '/machines', component: Machines },
-      { path: '/products', component: Products },
-      { path: '/productivitys', component: Productivitys },
-      { path: '/plans', component: Plans },
-      { path: '/machinePlans', component: MachinePlans },
-      { path: '/assignPlans', component: AssignPlans }
+      { path: '/topics', component: Topics }
     ]
   }
 ]

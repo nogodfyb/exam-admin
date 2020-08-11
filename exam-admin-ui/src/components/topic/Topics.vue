@@ -14,7 +14,7 @@
         <el-button type="success" @click="showUploadDialog">导入题目数据</el-button>
       </el-col>
       <el-col :span="2">
-        <el-link type="info" href="http://localhost:8082/exam/topic/download">下载模板</el-link>
+        <el-link type="info" href="http://localhost:8083/exam/topic/download">下载模板</el-link>
       </el-col>
     </el-row>
     <!-- 题目列表区域 -->
@@ -49,7 +49,7 @@
     <el-upload
       class="upload-demo"
       drag with-credentials
-      action="http://localhost:8082/exam/topic/upload"
+      action="http://localhost:8083/exam/topic/upload"
       multiple>
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
