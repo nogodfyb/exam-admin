@@ -21,13 +21,16 @@
     <el-table :data="userList" border stripe height="500">
       <el-table-column type="index" fixed></el-table-column>
       <el-table-column label="题干" prop="topicDesc"></el-table-column>
-      <el-table-column label="选项1" prop="answer1"></el-table-column>
-      <el-table-column label="选项2" prop="answer2"></el-table-column>
-      <el-table-column label="选项3" prop="answer4"></el-table-column>
-      <el-table-column label="选项4" prop="answer4"></el-table-column>
+      <el-table-column label="题型" prop="type" :formatter="formatter"></el-table-column>
+      <el-table-column label="选项A" prop="answer1"></el-table-column>
+      <el-table-column label="选项B" prop="answer2"></el-table-column>
+      <el-table-column label="选项C" prop="answer4"></el-table-column>
+      <el-table-column label="选项D" prop="answer4"></el-table-column>
+      <el-table-column label="选项E" prop="answer5"></el-table-column>
+      <el-table-column label="选项F" prop="answer6"></el-table-column>
       <el-table-column label="正确选项" prop="correctAnswer"></el-table-column>
-      <el-table-column label="创建时间" prop="createTime" ></el-table-column>
-      <el-table-column label="更新时间" prop="updateTime"></el-table-column>
+      <el-table-column label="创建时间" prop="createTime" width="180"></el-table-column>
+      <el-table-column label="更新时间" prop="updateTime" width="180"></el-table-column>
     </el-table>
 <!--    分页区域-->
     <el-pagination
@@ -82,7 +85,7 @@ export default {
     async getUserList () {
       const { data: res } = await this.$http.get('topic/topics', { params: this.queryInfo })
       if (res.status !== 200) {
-        return this.$message.error('获取登录日志列表失败！')
+        return this.$message.error('获取题目列表失败！')
       }
       this.userList = res.data.list
       this.total = res.data.total
@@ -105,6 +108,11 @@ export default {
     },
     uploadDialogClosed () {
       this.getUserList()
+    },
+    formatter (row, column) {
+      if (row.type === 1) {
+        return '单选'
+      } else { return row.type === 2 ? '判断' : '多选' }
     }
   }
 }

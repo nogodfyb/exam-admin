@@ -8,6 +8,8 @@ import com.fyb.exam.vo.TopicExcelVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,12 +80,28 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
         LOGGER.info("{}条数据，开始存储数据库！", list.size());
         ArrayList<Topic> topics = new ArrayList<>();
         for (TopicExcelVo topicExcelVo : list) {
+            int count=0;
             Topic topic = new Topic();
             topic.setTopicDesc(topicExcelVo.getTopicDesc());
+            topic.setType(topicExcelVo.getType());
+            for (int i = 1; i < 7; i++) {
+                try {
+                    Method method = topicExcelVo.getClass().getMethod("getAnswer" + i);
+                    Object invoke = method.invoke(topicExcelVo);
+                    if (invoke!=null) {
+                        count++;
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+            topic.setAnswerCount(count);
             topic.setAnswer1(topicExcelVo.getAnswer1());
             topic.setAnswer2(topicExcelVo.getAnswer2());
             topic.setAnswer3(topicExcelVo.getAnswer3());
             topic.setAnswer4(topicExcelVo.getAnswer4());
+            topic.setAnswer5(topicExcelVo.getAnswer5());
+            topic.setAnswer6(topicExcelVo.getAnswer6());
             topic.setCorrectAnswer(topicExcelVo.getCorrectAnswer());
             topic.setCreateTime(LocalDateTime.now());
             topic.setUpdateTime(LocalDateTime.now());

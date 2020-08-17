@@ -42,6 +42,17 @@ public class Topic implements Serializable {
     private String topicDesc;
 
     /**
+     * 题型(1代表单选，2代表判断题，3代表多选题)
+     */
+    private Integer type;
+
+    /**
+     * 选项数量
+     */
+    private Integer answerCount;
+
+
+    /**
      * 答案1
      */
     private String answer1;
@@ -62,9 +73,19 @@ public class Topic implements Serializable {
     private String answer4;
 
     /**
+     * 答案5
+     */
+    private String answer5;
+
+    /**
+     * 答案6
+     */
+    private String answer6;
+
+    /**
      * 正确答案的序号
      */
-    private int correctAnswer;
+    private String correctAnswer;
 
     /**
      * 创建时间

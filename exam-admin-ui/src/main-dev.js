@@ -6,7 +6,7 @@ import './assets/css/global.css'
 import './assets/fonts/iconfont.css'
 
 import axios from 'axios'
-axios.defaults.baseURL = 'http://localhost:8082/exam/'
+axios.defaults.baseURL = 'http://localhost:8083/exam/'
 // 允许携带cookie
 axios.defaults.withCredentials = true
 Vue.prototype.$http = axios
