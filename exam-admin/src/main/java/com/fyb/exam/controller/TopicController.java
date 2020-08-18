@@ -7,10 +7,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fyb.exam.common.CommonPage;
 import com.fyb.exam.common.CommonResult;
 import com.fyb.exam.dto.LoginLogPageParam;
+import com.fyb.exam.entity.Image;
 import com.fyb.exam.entity.Topic;
 import com.fyb.exam.listener.UploadTopicListener;
+import com.fyb.exam.service.IImageService;
 import com.fyb.exam.service.ITopicService;
 import com.fyb.exam.vo.TopicExcelVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 /**
@@ -32,8 +40,13 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/exam/topic")
 public class TopicController {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TopicController.class);
     @Autowired
     ITopicService topicService;
+    @Autowired
+    IImageService imageService;
 
     //分页查询
     @GetMapping("/topics")
@@ -61,5 +74,36 @@ public class TopicController {
     public String upload(MultipartFile file) throws IOException {
         EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService)).sheet().doRead();
         return "success";
+    }
+
+
+    @PostMapping("uploadImage/{id}")
+    public String uploadImageForWebApp(MultipartFile file, @PathVariable Integer id) {
+        if (file.isEmpty()) {
+            return "file is empty";
+        }
+        try {
+            byte[] bytes = file.getBytes();
+            String originalFilename = file.getOriginalFilename();
+            //根据id来命名图片
+            String fileName=id+originalFilename.substring(originalFilename.indexOf("."));
+            Path path = Paths.get("D:/imgs/" + fileName);
+            Files.write(path, bytes);
+            //上传成功之后
+            Image image = new Image();
+            image.setTopicId(id);
+            image.setFileName(fileName);
+            image.setCreateTime(LocalDateTime.now());
+            image.setUpdateTime(LocalDateTime.now());
+            imageService.save(image);
+            //更新topic
+            Topic topic = new Topic();
+            topic.setId(id);
+            topic.setImageName(fileName);
+            topicService.updateById(topic);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "file is upload";
     }
 }

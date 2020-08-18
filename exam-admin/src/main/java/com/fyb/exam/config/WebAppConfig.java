@@ -3,6 +3,7 @@ package com.fyb.exam.config;
 import com.fyb.exam.interceptor.SessionInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -16,6 +17,15 @@ public class WebAppConfig implements WebMvcConfigurer {
         // 设置拦截的路径、不拦截的路径、优先级等等
         registry.addInterceptor(new SessionInterceptor()).addPathPatterns("/exam/**")
                 .excludePathPatterns("/exam/employee/adminLogin");
+    }
+
+    /**
+     * 自定义静态资源映射
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/imgs/**")
+                .addResourceLocations("file:"+"D:/imgs/");
     }
 
 /*

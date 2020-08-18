@@ -31,6 +31,14 @@
       <el-table-column label="正确选项" prop="correctAnswer"></el-table-column>
       <el-table-column label="创建时间" prop="createTime" width="180"></el-table-column>
       <el-table-column label="更新时间" prop="updateTime" width="180"></el-table-column>
+      <el-table-column label="操作" width="400px">
+        <template slot-scope="scope">
+          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)">编辑</el-button>
+          <el-button type="info" icon="el-icon-upload" size="mini" @click="uploadImage(scope.row.id)">上传图片</el-button>
+          <el-button type="success"  size="mini" @click="watchImage(scope.row.imageName)">查看图片</el-button>
+          <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteTopic(scope.row.id)">删除</el-button>
+        </template>
+      </el-table-column>
     </el-table>
 <!--    分页区域-->
     <el-pagination
@@ -59,6 +67,35 @@
       <div class="el-upload__tip" slot="tip">只能上传xlsx文件，且不超过500kb</div>
     </el-upload>
   </el-dialog>
+
+  <!-- 上传img -->
+  <el-dialog
+    title="上传数据"
+    :visible.sync="uploadImgDialogVisible"
+    width="30%" @close="uploadImgDialogClosed"
+  >
+    <el-upload
+      class="upload-demo"
+      drag with-credentials
+      :action="uploadImgPath"
+      multiple>
+      <i class="el-icon-upload"></i>
+      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__tip" slot="tip">只能上传图片文件，且不超过1MB</div>
+    </el-upload>
+  </el-dialog>
+
+  <!-- 查看img -->
+  <el-dialog
+    title="查看该题目附件图片"
+    :visible.sync="watchImgDialogVisible"
+    width="50%" @close="watchImgDialogClosed"
+  >
+    <el-image
+      v-if="src.indexOf('null')==-1"
+      :src="src"
+      fit="fill"></el-image>
+  </el-dialog>
 </div>
 </template>
 
@@ -75,7 +112,11 @@ export default {
       },
       userList: [],
       total: 0,
-      uploadDialogVisible: false
+      uploadDialogVisible: false,
+      uploadImgDialogVisible: false,
+      watchImgDialogVisible: false,
+      uploadImgPath: '',
+      src: ''
     }
   },
   created () {
@@ -109,10 +150,25 @@ export default {
     uploadDialogClosed () {
       this.getUserList()
     },
+    uploadImgDialogClosed () {
+
+    },
+    watchImgDialogClosed () {
+
+    },
     formatter (row, column) {
       if (row.type === 1) {
         return '单选'
       } else { return row.type === 2 ? '判断' : '多选' }
+    },
+    uploadImage (id) {
+      this.uploadImgDialogVisible = true
+      this.uploadImgPath = 'http://localhost:8083/exam/topic/uploadImage/' + id
+    },
+    watchImage (imageName) {
+      this.src = 'http://localhost:8083/imgs/' + imageName
+      console.log(this.src.indexOf('null'))
+      this.watchImgDialogVisible = true
     }
   }
 }

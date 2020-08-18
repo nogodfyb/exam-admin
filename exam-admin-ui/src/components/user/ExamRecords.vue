@@ -13,17 +13,20 @@
       <!--          展开列-->
       <el-table-column type="expand" >
         <template slot-scope="scope">
-          <el-row>
+          <el-row style="border-bottom: 1px solid gray">
             <el-col :span="4"><div >题目Id</div></el-col>
             <el-col :span="4"><div >提交选项</div></el-col>
+            <el-col :span="4"><div >正确选项</div></el-col>
           </el-row>
-          <el-row>
+          <el-row >
             <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[0].topicId}}</div></el-col>
             <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[0].radio}}</div></el-col>
+            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[0].correctAnswer}}</div></el-col>
           </el-row>
           <el-row v-for="n in 9" :key="n">
             <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[n].topicId}}</div></el-col>
             <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[n].radio}}</div></el-col>
+            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[n].correctAnswer}}</div></el-col>
           </el-row>
         </template>
       </el-table-column>
