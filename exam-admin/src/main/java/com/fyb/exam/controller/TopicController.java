@@ -69,6 +69,7 @@ public class TopicController {
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         EasyExcel.write(response.getOutputStream(), TopicExcelVo.class).sheet("模板").doWrite(new ArrayList());
     }
+    //批量上传题目
     @PostMapping("upload")
     @ResponseBody
     public String upload(MultipartFile file) throws IOException {
@@ -76,7 +77,7 @@ public class TopicController {
         return "success";
     }
 
-
+    //上传题干附件图片
     @PostMapping("uploadImage/{id}")
     public String uploadImageForWebApp(MultipartFile file, @PathVariable Integer id) {
         if (file.isEmpty()) {
@@ -100,10 +101,21 @@ public class TopicController {
             Topic topic = new Topic();
             topic.setId(id);
             topic.setImageName(fileName);
+            topic.setUpdateTime(LocalDateTime.now());
             topicService.updateById(topic);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return "file is upload";
+    }
+
+    //添加选项仅为图片的题目
+    @PostMapping("/add")
+    public CommonResult<Object> add (@RequestBody Topic topic){
+        topic.setIsGraphic(true);
+        topic.setCreateTime(LocalDateTime.now());
+        topic.setUpdateTime(LocalDateTime.now());
+        boolean save = topicService.save(topic);
+        return save?CommonResult.success(null):CommonResult.failed();
     }
 }

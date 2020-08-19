@@ -82,6 +82,12 @@ public class Topic implements Serializable {
      */
     private String answer6;
 
+
+    /**
+     * 是否图片形式的题型：0，否，1是
+     */
+    private Boolean isGraphic;
+
     /**
      * 正确答案的序号
      */
