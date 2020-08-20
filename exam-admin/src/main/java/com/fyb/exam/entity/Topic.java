@@ -89,6 +89,11 @@ public class Topic implements Serializable {
     private Boolean isGraphic;
 
     /**
+     * 是否删除(0未删除，1删除)
+     */
+    private Boolean isDeleted;
+
+    /**
      * 正确答案的序号
      */
     private String correctAnswer;

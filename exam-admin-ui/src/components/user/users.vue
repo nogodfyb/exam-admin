@@ -22,7 +22,7 @@
         <el-button type="success" @click="showUploadDialog">导入用户数据</el-button>
       </el-col>
       <el-col :span="2">
-        <el-link type="info" href="http://localhost:8083/exam/employee/download">下载模板</el-link>
+        <el-link type="info" :href="BASE_REQUEST_PATH+'exam/employee/download'">下载模板</el-link>
       </el-col>
     </el-row>
     <!-- 用户列表区域 -->
@@ -100,7 +100,7 @@
     <el-upload
       class="upload-demo"
       drag with-credentials
-      action="http://localhost:8083/exam/employee/upload"
+      :action="BASE_REQUEST_PATH+'exam/employee/upload'"
       multiple>
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
@@ -111,9 +111,11 @@
 </template>
 
 <script>
+import config from '../../util/config'
 export default {
   data () {
     return {
+      BASE_REQUEST_PATH: config.BASE_REQUEST_PATH,
       // 获取用户列表的参数对象
       queryInfo: {
         query: '',

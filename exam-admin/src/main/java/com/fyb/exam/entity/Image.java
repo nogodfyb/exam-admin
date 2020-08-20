@@ -38,7 +38,7 @@ public class Image implements Serializable {
     /**
      * 选项id
      */
-    private Boolean answerId;
+    private Integer answerId;
 
     /**
      * 文件名，包含后缀

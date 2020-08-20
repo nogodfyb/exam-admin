@@ -2,6 +2,7 @@ package com.fyb.exam.controller;
 
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fyb.exam.common.CommonPage;
@@ -54,11 +55,22 @@ public class TopicController {
         Page<Topic> topicPage = new Page<>();
         topicPage.setSize(pageParam.getPageSize());
         topicPage.setCurrent(pageParam.getPageNum());
-        IPage<Topic> pageResult = topicService.page(topicPage);
+        //构造条件
+        QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
+        topicQueryWrapper.eq("is_deleted",false);
+        IPage<Topic> pageResult = topicService.page(topicPage,topicQueryWrapper);
         CommonPage<Topic> userCommonPage = CommonPage.restPage(pageResult);
         CommonResult<CommonPage<Topic>> success = CommonResult.success(userCommonPage);
         return success;
     }
+    //更新题目
+    @PutMapping("/topics/{id}")
+    public CommonResult<Object> updateTopic(@RequestBody Topic topic,@PathVariable Integer id){
+        topic.setUpdateTime(LocalDateTime.now());
+        boolean update = topicService.updateById(topic);
+        return  update?CommonResult.success(null):CommonResult.failed();
+    }
+    //下载模板
     @GetMapping("download")
     public void download(HttpServletResponse response) throws IOException {
         // 这里注意 有同学反应使用swagger 会导致各种问题，请直接用浏览器或者用postman
@@ -109,6 +121,63 @@ public class TopicController {
         return "file is upload";
     }
 
+    //上传题目选项附件图片
+    @PostMapping("uploadImageItem/{id}")
+    public String uploadImage(MultipartFile file, @PathVariable Integer id,String select) {
+        if (file.isEmpty()) {
+            return "file is empty";
+        }
+        try {
+            byte[] bytes = file.getBytes();
+            String originalFilename = file.getOriginalFilename();
+            //根据id来命名图片
+            //版本号随机
+            int version=(int )(Math.random() * 10000);
+            String fileName=id+"_"+select+version+originalFilename.substring(originalFilename.indexOf("."));
+            Path path = Paths.get("D:/imgs/" + fileName);
+            Files.write(path, bytes);
+            //上传成功之后
+            Image image = new Image();
+            Topic topic = new Topic();
+            if ("A".equals(select)) {
+                topic.setAnswer1(fileName);
+                image.setAnswerId(1);
+            }
+            if ("B".equals(select)) {
+                topic.setAnswer2(fileName);
+                image.setAnswerId(2);
+            }
+            if ("C".equals(select)) {
+                topic.setAnswer3(fileName);
+                image.setAnswerId(3);
+            }
+            if ("D".equals(select)) {
+                topic.setAnswer4(fileName);
+                image.setAnswerId(4);
+            }
+            if ("E".equals(select)) {
+                topic.setAnswer5(fileName);
+                image.setAnswerId(5);
+            }
+            if ("F".equals(select)) {
+                topic.setAnswer6(fileName);
+                image.setAnswerId(6);
+            }
+            image.setTopicId(id);
+            image.setFileName(fileName);
+            image.setCreateTime(LocalDateTime.now());
+            image.setUpdateTime(LocalDateTime.now());
+            imageService.save(image);
+            //更新topic
+            topic.setId(id);
+            topic.setUpdateTime(LocalDateTime.now());
+            topicService.updateById(topic);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "file is upload";
+    }
+
     //添加选项仅为图片的题目
     @PostMapping("/add")
     public CommonResult<Object> add (@RequestBody Topic topic){
@@ -117,5 +186,15 @@ public class TopicController {
         topic.setUpdateTime(LocalDateTime.now());
         boolean save = topicService.save(topic);
         return save?CommonResult.success(null):CommonResult.failed();
+    }
+
+    //删除题目
+    @DeleteMapping("/topics/{id}")
+    public CommonResult<Object> delete(@PathVariable Integer id){
+        Topic topic = new Topic();
+        topic.setId(id);
+        topic.setIsDeleted(true);
+        boolean update = topicService.updateById(topic);
+        return update?CommonResult.success(null):CommonResult.failed();
     }
 }
