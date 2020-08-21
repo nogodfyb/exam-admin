@@ -1,5 +1,6 @@
 package com.fyb.exam.config;
 
+import com.fyb.exam.common.Const;
 import com.fyb.exam.interceptor.SessionInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -25,7 +26,7 @@ public class WebAppConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/imgs/**")
-                .addResourceLocations("file:"+"D:/imgs/");
+                .addResourceLocations("file:"+ Const.IMG_PATH);
     }
 
 /*

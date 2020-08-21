@@ -9,4 +9,6 @@ public class Const {
         String ZHONG="中";
         String YE="夜";
     }
+
+    public static final String IMG_PATH="D:/imgs/";
 }

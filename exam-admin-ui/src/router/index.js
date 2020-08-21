@@ -7,6 +7,7 @@ import Users from '../components/user/users.vue'
 import Logins from '../components/user/Logins'
 import ExamRecords from '../components/user/ExamRecords'
 import Topics from '../components/topic/Topics'
+import Configs from '../components/topic/Configs'
 
 Vue.use(VueRouter)
 
@@ -22,7 +23,8 @@ const routes = [
       { path: '/users', component: Users },
       { path: '/logins', component: Logins },
       { path: '/records', component: ExamRecords },
-      { path: '/topics', component: Topics }
+      { path: '/topics', component: Topics },
+      { path: '/configs', component: Configs }
     ]
   }
 ]
