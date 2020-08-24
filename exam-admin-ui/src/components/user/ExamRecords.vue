@@ -17,16 +17,13 @@
             <el-col :span="4"><div >题目Id</div></el-col>
             <el-col :span="4"><div >提交选项</div></el-col>
             <el-col :span="4"><div >正确选项</div></el-col>
+            <el-col :span="4"><div >答题结果</div></el-col>
           </el-row>
-          <el-row >
-            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[0].topicId}}</div></el-col>
-            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[0].radio}}</div></el-col>
-            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[0].correctAnswer}}</div></el-col>
-          </el-row>
-          <el-row v-for="n in 9" :key="n">
-            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[n].topicId}}</div></el-col>
-            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[n].radio}}</div></el-col>
-            <el-col :span="4"><div >{{ JSON.parse(scope.row.submitContent).answerList[n].correctAnswer}}</div></el-col>
+          <el-row v-for="item in scope.row.info.answerList" :key="item.topicId">
+            <el-col :span="4"><div >{{item.topicId}}</div></el-col>
+            <el-col :span="4"><div >{{item.radio}}</div></el-col>
+            <el-col :span="4"><div >{{item.correctAnswer}}</div></el-col>
+            <el-col :span="4"><div >{{item.correctAnswer===item.radio?'对':'错'}}</div></el-col>
           </el-row>
         </template>
       </el-table-column>
@@ -62,7 +59,7 @@ export default {
       },
       userList: [],
       total: 0,
-      currentTopics: []
+      currentAnswers: []
     }
   },
   created () {
@@ -88,8 +85,7 @@ export default {
     },
     // 展开之后绑定答题记录到currentTopics
     expand (row) {
-      console.log(JSON.parse(row.submitContent))
-      this.currentTopics = JSON.parse(row.submitContent)
+      row.info = JSON.parse(row.submitContent)
     }
   }
 }
