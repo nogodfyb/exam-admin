@@ -23,7 +23,7 @@
             <el-col :span="4"><div >{{item.topicId}}</div></el-col>
             <el-col :span="4"><div >{{item.radio}}</div></el-col>
             <el-col :span="4"><div >{{item.correctAnswer}}</div></el-col>
-            <el-col :span="4"><div >{{item.correctAnswer===item.radio?'对':'错'}}</div></el-col>
+            <el-col :span="4"><div >{{item.correctAnswer===item.radio?'对':item.correctAnswer.indexOf(item.radio)!==-1?'半对':'错'}}</div></el-col>
           </el-row>
         </template>
       </el-table-column>

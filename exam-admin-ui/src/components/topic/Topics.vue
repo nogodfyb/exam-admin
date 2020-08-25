@@ -391,6 +391,8 @@ export default {
         if (!valid) {
           return false
         }
+        const newCorrect = this.editForm.correctAnswer.toUpperCase().split('').sort().join('')
+        this.editForm.correctAnswer = newCorrect
         // 可以发起修改题目的网络请求
         const url = 'topic/topics/' + this.editForm.id
         const { data: res } = await this.$http.put(url, this.editForm)
