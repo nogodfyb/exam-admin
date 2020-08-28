@@ -9,7 +9,7 @@
     <!-- 卡片视图 -->
   <el-card>
     <!-- 用户列表区域 -->
-    <el-table :data="userList" border stripe height="550">
+    <el-table :data="userList" border stripe :height="height">
       <el-table-column type="index"></el-table-column>
       <el-table-column label="工号" prop="employeeCode"></el-table-column>
       <el-table-column label="ip地址" prop="ip"></el-table-column>
@@ -35,6 +35,7 @@
 export default {
   data () {
     return {
+      height: 550,
       // 获取登录日志列表的参数对象
       queryInfo: {
         // 当前的页数
@@ -47,6 +48,9 @@ export default {
     }
   },
   created () {
+    if (window.screen.width < 1400) {
+      this.height -= 130
+    }
     this.getUserList()
   },
   methods: {

@@ -9,7 +9,7 @@
     <!-- 卡片视图 -->
   <el-card>
     <!-- 用户列表区域 -->
-    <el-table :data="userList" border stripe height="550" @expand-change="expand">
+    <el-table :data="userList" border stripe :height="height" @expand-change="expand">
       <!--          展开列-->
       <el-table-column type="expand" >
         <template slot-scope="scope">
@@ -50,6 +50,7 @@
 export default {
   data () {
     return {
+      height: 550,
       // 获取登录日志列表的参数对象
       queryInfo: {
         // 当前的页数
@@ -63,6 +64,9 @@ export default {
     }
   },
   created () {
+    if (window.screen.width < 1400) {
+      this.height -= 130
+    }
     this.getUserList()
   },
   methods: {

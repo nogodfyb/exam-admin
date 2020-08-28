@@ -42,7 +42,7 @@ export default {
     async saveSetting () {
       const { data: res } = await this.$http.put('setting/current', this.currentConfig)
       if (res.status !== 200) {
-        return this.$message.error('修改配置信息失败！')
+        return this.$message.error(res.msg)
       }
       this.$message.success('修改配置信息成功!')
       await this.getConfig()

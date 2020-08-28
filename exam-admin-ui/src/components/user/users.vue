@@ -15,18 +15,18 @@
         <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
       </el-input>
       </el-col>
-      <el-col :span="2">
+      <el-col :span="3">
         <el-button type="primary" @click="dialogVisible=true">添加用户</el-button>
       </el-col>
       <el-col :span="3">
         <el-button type="success" @click="showUploadDialog">导入用户数据</el-button>
       </el-col>
-      <el-col :span="2">
+      <el-col :span="3">
         <el-link type="info" :href="BASE_REQUEST_PATH+'exam/employee/download'">下载模板</el-link>
       </el-col>
     </el-row>
     <!-- 用户列表区域 -->
-    <el-table :data="userList" border stripe height="500">
+    <el-table :data="userList" border stripe :height="height">
       <el-table-column type="index"></el-table-column>
       <el-table-column label="工号" prop="employeeCode"></el-table-column>
       <el-table-column label="创建时间" prop="createTime"></el-table-column>
@@ -115,6 +115,7 @@ import config from '../../util/config'
 export default {
   data () {
     return {
+      height: 500,
       BASE_REQUEST_PATH: config.BASE_REQUEST_PATH,
       // 获取用户列表的参数对象
       queryInfo: {
@@ -149,6 +150,9 @@ export default {
     }
   },
   created () {
+    if (window.screen.width < 1400) {
+      this.height -= 120
+    }
     this.getUserList()
   },
   methods: {

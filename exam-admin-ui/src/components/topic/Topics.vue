@@ -10,18 +10,18 @@
   <el-card>
     <!-- 搜索与添加区域  -->
     <el-row :gutter="20">
-      <el-col :span="3">
+      <el-col :span="4">
         <el-button type="success" @click="showUploadDialog">导入题目数据</el-button>
       </el-col>
-      <el-col :span="3">
+      <el-col :span="4">
         <el-button type="primary" @click="showAddDialog">添加纯图片选项题</el-button>
       </el-col>
-      <el-col :span="2">
+      <el-col :span="4">
         <el-link type="info" :href="BASE_REQUEST_PATH+'exam/topic/download'">下载模板</el-link>
       </el-col>
     </el-row>
     <!-- 题目列表区域 -->
-    <el-table :data="userList" border stripe height="500">
+    <el-table :data="userList" border stripe :height="height">
       <el-table-column type="index" fixed></el-table-column>
       <el-table-column label="题干" prop="topicDesc"></el-table-column>
       <el-table-column label="题型" prop="type" :formatter="formatter"></el-table-column>
@@ -252,6 +252,7 @@ import config from '../../util/config'
 export default {
   data () {
     return {
+      height: 500,
       // 获取登录日志列表的参数对象
       queryInfo: {
         // 当前的页数
@@ -296,6 +297,9 @@ export default {
     }
   },
   created () {
+    if (window.screen.width < 1400) {
+      this.height -= 120
+    }
     this.getUserList()
   },
   methods: {

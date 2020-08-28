@@ -36,6 +36,16 @@ public class CommonResult<T> {
     }
 
     /**
+     *
+     * @param msg 设置错误信息
+     * @param <T>
+     * @return 操作失败返回结果
+     */
+    public static <T> CommonResult<T> failed(String msg) {
+        return new CommonResult<T>(ResultCodeEnum.FAILED.getCode(), msg, null);
+    }
+
+    /**
      * 参数校验失败返回结果
      *
      *
