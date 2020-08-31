@@ -2,11 +2,13 @@ package com.fyb.exam.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.fyb.exam.common.Const;
 import com.fyb.exam.entity.Topic;
 import com.fyb.exam.service.ITopicService;
 import com.fyb.exam.vo.TopicExcelVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,8 +47,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
     /**
      * 这个每一条数据解析都会来调用
      *
-     * @param data
-     *            one row value. Is is same as {@link AnalysisContext#readRowHolder()}
+     * @param data    one row value. Is is same as {@link AnalysisContext#readRowHolder()}
      * @param context
      */
     @Override
@@ -80,22 +81,57 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
         LOGGER.info("{}条数据，开始存储数据库！", list.size());
         ArrayList<Topic> topics = new ArrayList<>();
         for (TopicExcelVo topicExcelVo : list) {
-            int count=0;
+            if (StringUtils.isEmpty(topicExcelVo.getTopicDesc())) {
+                //如果topic的题干为空，跳过
+                continue;
+            }
+            //单选题
+            if (topicExcelVo.getType() == Const.SINGLE_TYPE) {
+                String correctAnswer = topicExcelVo.getCorrectAnswer();
+                if (correctAnswer.length() > 1) {
+                    topicService.getFailList().add(topicExcelVo);
+                    continue;
+                }
+            }
+            //判断题
+            if (topicExcelVo.getType() == Const.JUDGE_TYPE) {
+                int count=0;
+                for (int i = 1; i < 7; i++) {
+                    try {
+                        Method method = topicExcelVo.getClass().getMethod("getAnswer" + i);
+                        Object invoke = method.invoke(topicExcelVo);
+                        if (invoke!=null) {
+                            count++;
+                        }
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(count!=2){
+                    topicService.getFailList().add(topicExcelVo);
+                    continue;
+                }
+                if(!topicExcelVo.getCorrectAnswer().equals("A")&&!topicExcelVo.getCorrectAnswer().equals("B")){
+                    topicService.getFailList().add(topicExcelVo);
+                    continue;
+                }
+            }
+            //多选题
+            if(topicExcelVo.getType()==Const.MULTIPLE_TYPE){
+                String correctAnswer = topicExcelVo.getCorrectAnswer();
+                if (!(correctAnswer.length()>1)) {
+                    topicService.getFailList().add(topicExcelVo);
+                    continue;
+                }
+            }
+            //题型不在这三种范围的
+            if(topicExcelVo.getType()!=1&&topicExcelVo.getType()!=2&&topicExcelVo.getType()!=3){
+                topicService.getFailList().add(topicExcelVo);
+                continue;
+            }
             Topic topic = new Topic();
             topic.setTopicDesc(topicExcelVo.getTopicDesc());
             topic.setType(topicExcelVo.getType());
-            for (int i = 1; i < 7; i++) {
-                try {
-                    Method method = topicExcelVo.getClass().getMethod("getAnswer" + i);
-                    Object invoke = method.invoke(topicExcelVo);
-                    if (invoke!=null) {
-                        count++;
-                    }
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-            topic.setAnswerCount(count);
             topic.setAnswer1(topicExcelVo.getAnswer1());
             topic.setAnswer2(topicExcelVo.getAnswer2());
             topic.setAnswer3(topicExcelVo.getAnswer3());
@@ -107,7 +143,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             topic.setUpdateTime(LocalDateTime.now());
             topics.add(topic);
         }
-        topicService.saveBatch(topics,BATCH_COUNT);
+        topicService.saveBatch(topics, BATCH_COUNT);
         LOGGER.info("存储数据库成功！");
     }
 }

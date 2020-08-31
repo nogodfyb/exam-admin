@@ -47,12 +47,6 @@ public class Topic implements Serializable {
     private Integer type;
 
     /**
-     * 选项数量
-     */
-    private Integer answerCount;
-
-
-    /**
      * 答案1
      */
     private String answer1;

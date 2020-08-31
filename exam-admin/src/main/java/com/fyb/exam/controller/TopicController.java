@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -81,12 +82,25 @@ public class TopicController {
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         EasyExcel.write(response.getOutputStream(), TopicExcelVo.class).sheet("模板").doWrite(new ArrayList());
     }
+    //下载异常信息
+    @GetMapping("download/exception")
+    public void downloadException(HttpServletResponse response) throws IOException {
+            response.setContentType("application/vnd.ms-excel");
+            response.setCharacterEncoding("utf-8");
+            // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+            String fileName = URLEncoder.encode("上传异常内容", "UTF-8");
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+            EasyExcel.write(response.getOutputStream(), TopicExcelVo.class).sheet("异常内容").doWrite(topicService.getFailList());
+    }
     //批量上传题目
     @PostMapping("upload")
     @ResponseBody
-    public String upload(MultipartFile file) throws IOException {
+    public void upload(MultipartFile file, HttpServletResponse response) throws IOException {
+        //清空错误list中的数据
+        List<TopicExcelVo> failList = topicService.getFailList();
+        failList.clear();
         EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService)).sheet().doRead();
-        return "success";
+        // return "success";
     }
 
     //上传题干附件图片
