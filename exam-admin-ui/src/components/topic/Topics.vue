@@ -351,6 +351,11 @@ export default {
     async afterUpload () {
       const { data: res } = await this.$http.get('topic/confirm')
       if (res.status === 200) {
+        this.$message.warning({
+          message: '本次上传有异常内容，请允许浏览器下载异常信息',
+          duration: 0,
+          showClose: true
+        })
         window.location.href = this.BASE_REQUEST_PATH + 'exam/topic/download/exception'
       }
     },
