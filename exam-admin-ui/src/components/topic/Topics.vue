@@ -99,13 +99,13 @@
     <el-upload
       class="upload-demo"
       drag with-credentials
+      :on-success="afterUpload"
       :action="BASE_REQUEST_PATH+'exam/topic/upload'"
       multiple>
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       <div class="el-upload__tip" slot="tip">只能上传xlsx文件，且不超过500kb</div>
     </el-upload>
-    <el-link type="info" :href="BASE_REQUEST_PATH+'exam/topic/download/exception'">下载最近错误信息</el-link>
   </el-dialog>
   <!-- 上传img -->
   <el-dialog
@@ -347,6 +347,12 @@ export default {
     },
     uploadDialogClosed () {
       this.getUserList()
+    },
+    async afterUpload () {
+      const { data: res } = await this.$http.get('topic/confirm')
+      if (res.status === 200) {
+        window.location.href = this.BASE_REQUEST_PATH + 'exam/topic/download/exception'
+      }
     },
     uploadImgDialogClosed () {
       this.getUserList()

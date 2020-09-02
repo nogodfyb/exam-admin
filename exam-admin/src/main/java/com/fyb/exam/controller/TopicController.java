@@ -1,12 +1,12 @@
 package com.fyb.exam.controller;
 
-
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fyb.exam.common.CommonPage;
 import com.fyb.exam.common.CommonResult;
+import com.fyb.exam.common.Const;
 import com.fyb.exam.dto.LoginLogPageParam;
 import com.fyb.exam.entity.Image;
 import com.fyb.exam.entity.Topic;
@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -28,12 +28,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author fyb
@@ -52,25 +53,27 @@ public class TopicController {
 
     //分页查询
     @GetMapping("/topics")
-    public CommonResult<CommonPage<Topic>> queryAllUsers(@Valid LoginLogPageParam pageParam){
+    public CommonResult<CommonPage<Topic>> queryAllUsers(@Valid LoginLogPageParam pageParam) {
         Page<Topic> topicPage = new Page<>();
         topicPage.setSize(pageParam.getPageSize());
         topicPage.setCurrent(pageParam.getPageNum());
         //构造条件
         QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-        topicQueryWrapper.eq("is_deleted",false);
-        IPage<Topic> pageResult = topicService.page(topicPage,topicQueryWrapper);
+        topicQueryWrapper.eq("is_deleted", false);
+        IPage<Topic> pageResult = topicService.page(topicPage, topicQueryWrapper);
         CommonPage<Topic> userCommonPage = CommonPage.restPage(pageResult);
         CommonResult<CommonPage<Topic>> success = CommonResult.success(userCommonPage);
         return success;
     }
+
     //更新题目
     @PutMapping("/topics/{id}")
-    public CommonResult<Object> updateTopic(@RequestBody Topic topic,@PathVariable Integer id){
+    public CommonResult<Object> updateTopic(@RequestBody Topic topic, @PathVariable Integer id) {
         topic.setUpdateTime(LocalDateTime.now());
         boolean update = topicService.updateById(topic);
-        return  update?CommonResult.success(null):CommonResult.failed();
+        return update ? CommonResult.success(null) : CommonResult.failed();
     }
+
     //下载模板
     @GetMapping("download")
     public void download(HttpServletResponse response) throws IOException {
@@ -82,25 +85,40 @@ public class TopicController {
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         EasyExcel.write(response.getOutputStream(), TopicExcelVo.class).sheet("模板").doWrite(new ArrayList());
     }
+
+    //确认当前是否有异常内容
+    @GetMapping("confirm")
+    public CommonResult<Object> confirmException(HttpSession session){
+        Object attribute = session.getAttribute(Const.CURRENT_FAIL_LIST);
+        return attribute!=null?CommonResult.success(null):CommonResult.failed();
+    }
     //下载异常信息
     @GetMapping("download/exception")
-    public void downloadException(HttpServletResponse response) throws IOException {
+    public void downloadException(HttpServletResponse response,HttpSession session) throws IOException {
+        List<TopicExcelVo> list= (List<TopicExcelVo>)session.getAttribute(Const.CURRENT_FAIL_LIST);
+        if (list!=null) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
             response.setContentType("application/vnd.ms-excel");
             response.setCharacterEncoding("utf-8");
             // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
-            String fileName = URLEncoder.encode("上传异常内容", "UTF-8");
+            String fileName = URLEncoder.encode(now.format(formatter)+"异常上传内容", "UTF-8");
             response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
-            EasyExcel.write(response.getOutputStream(), TopicExcelVo.class).sheet("异常内容").doWrite(topicService.getFailList());
+            EasyExcel.write(response.getOutputStream(), TopicExcelVo.class).sheet("异常内容").doWrite(list);
+        }
+        session.setAttribute(Const.CURRENT_FAIL_LIST,null);
     }
+
     //批量上传题目
     @PostMapping("upload")
     @ResponseBody
-    public void upload(MultipartFile file, HttpServletResponse response) throws IOException {
-        //清空错误list中的数据
-        List<TopicExcelVo> failList = topicService.getFailList();
-        failList.clear();
-        EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService)).sheet().doRead();
-        // return "success";
+    public String upload(MultipartFile file, HttpSession session) throws IOException {
+        ArrayList<TopicExcelVo> topicExcelVos = new ArrayList<>();
+        EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService,topicExcelVos)).sheet().doRead();
+        if (topicExcelVos.size()!=0) {
+            session.setAttribute(Const.CURRENT_FAIL_LIST,topicExcelVos);
+        }
+        return "success";
     }
 
     //上传题干附件图片
@@ -113,7 +131,7 @@ public class TopicController {
             byte[] bytes = file.getBytes();
             String originalFilename = file.getOriginalFilename();
             //根据id来命名图片
-            String fileName=id+originalFilename.substring(originalFilename.indexOf("."));
+            String fileName = id + originalFilename.substring(originalFilename.indexOf("."));
             Path path = Paths.get("D:/imgs/" + fileName);
             Files.write(path, bytes);
             //上传成功之后
@@ -137,7 +155,7 @@ public class TopicController {
 
     //上传题目选项附件图片
     @PostMapping("uploadImageItem/{id}")
-    public String uploadImage(MultipartFile file, @PathVariable Integer id,String select) {
+    public String uploadImage(MultipartFile file, @PathVariable Integer id, String select) {
         if (file.isEmpty()) {
             return "file is empty";
         }
@@ -146,8 +164,8 @@ public class TopicController {
             String originalFilename = file.getOriginalFilename();
             //根据id来命名图片
             //版本号随机
-            int version=(int )(Math.random() * 10000);
-            String fileName=id+"_"+select+version+originalFilename.substring(originalFilename.indexOf("."));
+            int version = (int) (Math.random() * 10000);
+            String fileName = id + "_" + select + version + originalFilename.substring(originalFilename.indexOf("."));
             Path path = Paths.get("D:/imgs/" + fileName);
             Files.write(path, bytes);
             //上传成功之后
@@ -194,21 +212,21 @@ public class TopicController {
 
     //添加选项仅为图片的题目
     @PostMapping("/add")
-    public CommonResult<Object> add (@RequestBody Topic topic){
+    public CommonResult<Object> add(@RequestBody Topic topic) {
         topic.setIsGraphic(true);
         topic.setCreateTime(LocalDateTime.now());
         topic.setUpdateTime(LocalDateTime.now());
         boolean save = topicService.save(topic);
-        return save?CommonResult.success(null):CommonResult.failed();
+        return save ? CommonResult.success(null) : CommonResult.failed();
     }
 
     //删除题目
     @DeleteMapping("/topics/{id}")
-    public CommonResult<Object> delete(@PathVariable Integer id){
+    public CommonResult<Object> delete(@PathVariable Integer id) {
         Topic topic = new Topic();
         topic.setId(id);
         topic.setIsDeleted(true);
         boolean update = topicService.updateById(topic);
-        return update?CommonResult.success(null):CommonResult.failed();
+        return update ? CommonResult.success(null) : CommonResult.failed();
     }
 }

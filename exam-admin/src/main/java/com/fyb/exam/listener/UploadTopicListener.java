@@ -35,13 +35,17 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
      */
     private ITopicService topicService;
 
+    private ArrayList<TopicExcelVo> topicExcelVos;
+
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      *
      * @param topicService
+     * @param topicExcelVos
      */
-    public UploadTopicListener(ITopicService topicService) {
+    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos) {
         this.topicService = topicService;
+        this.topicExcelVos=topicExcelVos;
     }
 
     /**
@@ -89,7 +93,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             if (topicExcelVo.getType() == Const.SINGLE_TYPE) {
                 String correctAnswer = topicExcelVo.getCorrectAnswer();
                 if (correctAnswer.length() > 1) {
-                    topicService.getFailList().add(topicExcelVo);
+                    topicExcelVos.add(topicExcelVo);
                     continue;
                 }
             }
@@ -108,11 +112,11 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
                     }
                 }
                 if(count!=2){
-                    topicService.getFailList().add(topicExcelVo);
+                    topicExcelVos.add(topicExcelVo);
                     continue;
                 }
                 if(!topicExcelVo.getCorrectAnswer().equals("A")&&!topicExcelVo.getCorrectAnswer().equals("B")){
-                    topicService.getFailList().add(topicExcelVo);
+                    topicExcelVos.add(topicExcelVo);
                     continue;
                 }
             }
@@ -120,13 +124,13 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             if(topicExcelVo.getType()==Const.MULTIPLE_TYPE){
                 String correctAnswer = topicExcelVo.getCorrectAnswer();
                 if (!(correctAnswer.length()>1)) {
-                    topicService.getFailList().add(topicExcelVo);
+                    topicExcelVos.add(topicExcelVo);
                     continue;
                 }
             }
             //题型不在这三种范围的
             if(topicExcelVo.getType()!=1&&topicExcelVo.getType()!=2&&topicExcelVo.getType()!=3){
-                topicService.getFailList().add(topicExcelVo);
+                topicExcelVos.add(topicExcelVo);
                 continue;
             }
             Topic topic = new Topic();

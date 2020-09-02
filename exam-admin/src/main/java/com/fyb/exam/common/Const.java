@@ -4,6 +4,8 @@ public class Const {
 
     public static final String CURRENT_USER = "currentUser";
 
+    public static final String CURRENT_FAIL_LIST="currentFailList";
+
     //单选
     public static final int SINGLE_TYPE=1;
 

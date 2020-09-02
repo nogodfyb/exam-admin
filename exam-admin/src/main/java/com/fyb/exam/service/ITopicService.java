@@ -2,9 +2,6 @@ package com.fyb.exam.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fyb.exam.entity.Topic;
-import com.fyb.exam.vo.TopicExcelVo;
-
-import java.util.List;
 
 /**
  * <p>
@@ -16,5 +13,4 @@ import java.util.List;
  */
 public interface ITopicService extends IService<Topic> {
 
-    List<TopicExcelVo> getFailList();
 }
