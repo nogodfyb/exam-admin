@@ -21,10 +21,11 @@
       </el-col>
     </el-row>
     <!-- 题目列表区域 -->
-    <el-table :data="userList" border stripe :height="height">
+    <el-table :data="list" border stripe :height="height">
       <el-table-column type="index" fixed></el-table-column>
       <el-table-column label="题干" prop="topicDesc"></el-table-column>
       <el-table-column label="题型" prop="type" :formatter="formatter"></el-table-column>
+      <el-table-column label="区域" prop="areaId" :formatter="formatter2"></el-table-column>
       <el-table-column label="选项A"  width="125">
         <template slot-scope="scope">
           <el-image v-if="scope.row.isGraphic===true&&scope.row.answer1!==null" fit="cover" :src="BASE_REQUEST_IMG_PATH+scope.row.answer1" style="width: 100px;height: 100px">
@@ -267,7 +268,8 @@ export default {
       },
       editForm: {
       },
-      userList: [],
+      list: [],
+      areasInformation: [],
       total: 0,
       uploadDialogVisible: false,
       uploadImgDialogVisible: false,
@@ -301,25 +303,33 @@ export default {
     if (window.screen.width < 1400) {
       this.height -= 120
     }
-    this.getUserList()
+    this.getList()
+    this.getAreasInformation()
   },
   methods: {
-    async getUserList () {
+    async getAreasInformation () {
+      const { data: res } = await this.$http.get('area/list')
+      if (res.status !== 200) {
+        return this.$message.error('获取区域信息失败!')
+      }
+      this.areasInformation = res.data
+    },
+    async getList () {
       const { data: res } = await this.$http.get('topic/topics', { params: this.queryInfo })
       if (res.status !== 200) {
         return this.$message.error('获取题目列表失败！')
       }
-      this.userList = res.data.list
+      this.list = res.data.list
       this.total = res.data.total
       console.log(res)
     },
     handleSizeChange (newSize) {
       this.queryInfo.pageSize = newSize
-      this.getUserList()
+      this.getList()
     },
     handleCurrentChange (newPage) {
       this.queryInfo.pageNum = newPage
-      this.getUserList()
+      this.getList()
     },
     async showUploadDialog () {
       const { data: res } = await this.$http.get('employee/isLogin')
@@ -346,7 +356,7 @@ export default {
       }
     },
     uploadDialogClosed () {
-      this.getUserList()
+      this.getList()
     },
     async afterUpload () {
       const { data: res } = await this.$http.get('topic/confirm')
@@ -360,13 +370,13 @@ export default {
       }
     },
     uploadImgDialogClosed () {
-      this.getUserList()
+      this.getList()
     },
     addTopicDialogClosed () {
       this.$refs.addFormRef.resetFields()
     },
     editTopicDialogClosed () {
-      this.getUserList()
+      this.getList()
       this.$refs.editFormRef.resetFields()
     },
     watchImgDialogClosed () {
@@ -376,6 +386,13 @@ export default {
       if (row.type === 1) {
         return '单选'
       } else { return row.type === 2 ? '判断' : '多选' }
+    },
+    formatter2 (row, column) {
+      for (let i = 0; i < this.areasInformation.length; i++) {
+        if (row.areaId === this.areasInformation[i].id) {
+          return this.areasInformation[i].areaName
+        }
+      }
     },
     uploadImage (id) {
       this.uploadImgDialogVisible = true
@@ -399,7 +416,7 @@ export default {
         // 隐藏添加题目的对话框
         this.addTopicDialogVisible = false
         // 重新获取题目列表数据
-        await this.getUserList()
+        await this.getList()
       })
     },
     editTopic () {
@@ -419,7 +436,7 @@ export default {
         // 隐藏添加题目的对话框
         this.editTopicDialogVisible = false
         // 重新获取题目列表数据
-        await this.getUserList()
+        await this.getList()
       })
     },
     // 删除topic
@@ -448,7 +465,7 @@ export default {
         type: 'success',
         message: '删除成功!'
       })
-      this.getUserList()
+      this.getList()
     }
   }
 }
