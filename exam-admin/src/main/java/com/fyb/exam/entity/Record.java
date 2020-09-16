@@ -39,6 +39,11 @@ public class Record implements Serializable {
     private Integer employeeId;
 
     /**
+     * 区域名称
+     */
+    private String areaName;
+
+    /**
      * 职员编号
      */
     private String employeeCode;

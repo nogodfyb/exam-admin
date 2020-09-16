@@ -29,6 +29,7 @@
       </el-table-column>
       <el-table-column type="index"></el-table-column>
       <el-table-column label="工号" prop="employeeCode"></el-table-column>
+      <el-table-column label="选择区域" prop="areaName"></el-table-column>
       <el-table-column label="答题得分" prop="score"></el-table-column>
       <el-table-column label="答题时间" prop="createTime"></el-table-column>
     </el-table>
