@@ -37,7 +37,7 @@ public class LoginLogController {
         loginLogPage.setSize(pageParam.getPageSize());
         loginLogPage.setCurrent(pageParam.getPageNum());
         IPage<LoginLog> pageResult = loginLogService.page(loginLogPage);
-        CommonPage<LoginLog> userCommonPage = CommonPage.restPage(pageResult);
+        CommonPage<LoginLog> userCommonPage = CommonPage.resetPage(pageResult);
         CommonResult<CommonPage<LoginLog>> success = CommonResult.success(userCommonPage);
         return success;
     }

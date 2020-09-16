@@ -68,7 +68,9 @@
           <p v-if="scope.row.isGraphic===false">{{scope.row.answer6}}</p>
         </template>
       </el-table-column>
-      <el-table-column label="正确选项" prop="correctAnswer"></el-table-column>
+      <el-table-column label="正确选项" prop="correctAnswer" width="100"></el-table-column>
+      <el-table-column label="创建者" prop="creatorId"></el-table-column>
+      <el-table-column label="最后更新人" prop="lastOperatorId" width="100"></el-table-column>
       <el-table-column label="创建时间" prop="createTime" width="180"></el-table-column>
       <el-table-column label="更新时间" prop="updateTime" width="180"></el-table-column>
       <el-table-column label="操作" width="450px">
@@ -427,8 +429,7 @@ export default {
         const newCorrect = this.editForm.correctAnswer.toUpperCase().split('').sort().join('')
         this.editForm.correctAnswer = newCorrect
         // 可以发起修改题目的网络请求
-        const url = 'topic/topics/' + this.editForm.id
-        const { data: res } = await this.$http.put(url, this.editForm)
+        const { data: res } = await this.$http.put('topic/topics', this.editForm)
         if (res.status !== 200) {
           return this.$message.error('修改题目失败！')
         }

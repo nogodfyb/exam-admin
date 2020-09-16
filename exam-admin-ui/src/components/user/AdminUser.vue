@@ -25,6 +25,7 @@
       <el-table-column label="工号" prop="userName"></el-table-column>
       <el-table-column label="创建时间" prop="createTime"></el-table-column>
       <el-table-column label="更新时间" prop="updateTime"></el-table-column>
+      <el-table-column label="区域" prop="areaId" :formatter="formatter"></el-table-column>
       <el-table-column label="操作" width="200px">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)">编辑</el-button>
@@ -163,6 +164,13 @@ export default {
       this.list = res.data.list
       this.total = res.data.total
     },
+    formatter (row, column) {
+      for (let i = 0; i < this.areasInformation.length; i++) {
+        if (row.areaId === this.areasInformation[i].id) {
+          return this.areasInformation[i].areaName
+        }
+      }
+    },
     handleSizeChange (newSize) {
       this.queryInfo.pageSize = newSize
       this.getList()
@@ -211,8 +219,8 @@ export default {
         }
         // 可以发起修改用户的网络请求
         const { data: res } = await this.$http.put('admin/admins', this.editForm)
-        if (res.status !== 201) {
-          this.$message.error('修改用户失败！')
+        if (res.status !== 200) {
+          return this.$message.error('修改用户失败！')
         }
         this.$message.success('修改用户成功！')
         // 隐藏修改用户的对话框
@@ -227,9 +235,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 暂不开启删除功能
-        return this.$message.error('暂不开启删除功能')
-        // this.deleteUserById(id)
+        this.deleteUserById(id)
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -239,7 +245,7 @@ export default {
     },
     async deleteUserById (userId) {
       // 可以发起修改用户的网络请求
-      const { data: res } = await this.$http.delete(`user/users/${userId}`)
+      const { data: res } = await this.$http.delete(`admin/admins/${userId}`)
       if (res.status !== 200) {
         return this.$message.error('删除失败')
       }
@@ -247,7 +253,7 @@ export default {
         type: 'success',
         message: '删除成功!'
       })
-      this.getList()
+      await this.getList()
     }
   }
 }

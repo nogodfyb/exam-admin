@@ -223,8 +223,8 @@ export default {
         }
         // 可以发起修改用户的网络请求
         const { data: res } = await this.$http.put('employee/employees', this.editForm)
-        if (res.status !== 201) {
-          this.$message.error('修改用户失败！')
+        if (res.status !== 200) {
+          return this.$message.error('修改用户失败！')
         }
         this.$message.success('修改用户成功！')
         // 隐藏修改用户的对话框

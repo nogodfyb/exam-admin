@@ -10,8 +10,10 @@ import com.fyb.exam.common.CommonResult;
 import com.fyb.exam.common.Const;
 import com.fyb.exam.dto.AdminParam;
 import com.fyb.exam.dto.EmployeePageParam;
+import com.fyb.exam.entity.AdminUser;
 import com.fyb.exam.entity.Employee;
 import com.fyb.exam.listener.UploadEmployeeListener;
+import com.fyb.exam.service.IAdminUserService;
 import com.fyb.exam.service.IEmployeeService;
 import com.fyb.exam.util.MD5Utils;
 import com.fyb.exam.vo.EmployExcelVo;
@@ -43,19 +45,21 @@ public class EmployeeController {
     @Autowired
     private IEmployeeService employeeService;
 
+    @Autowired
+    private IAdminUserService adminUserService;
+
 
     @PostMapping("adminLogin")
     public CommonResult<Object> adminLogin(@RequestBody AdminParam adminParam, HttpSession session){
-        boolean status1 = "admin".equals(adminParam.getUsername());
-        boolean status2 = "admin".equals(adminParam.getPassword());
-        if(status1&&status2){
-            // 登录成功存储在session中
-            session.setAttribute(Const.CURRENT_USER,adminParam);
+        QueryWrapper<AdminUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_name",adminParam.getUsername()).eq("password",MD5Utils.encode(adminParam.getPassword()));
+        AdminUser one = adminUserService.getOne(queryWrapper);
+        if(one!=null){
+            session.setAttribute(Const.CURRENT_USER,one);
             return CommonResult.success(null);
-        }
-        return CommonResult.failed();
+        } else return CommonResult.failed();
     }
-    //检验用户是否已登录
+    //检验管理员是否已登录
     @GetMapping("isLogin")
     public CommonResult<Object> isLogin(HttpSession session){
         Object user = session.getAttribute(Const.CURRENT_USER);
@@ -75,7 +79,7 @@ public class EmployeeController {
             employeeQueryWrapper.like("employee_code",employeePageParam.getQuery());
         }
         IPage<Employee> pageResult = employeeService.page(userPage,employeeQueryWrapper);
-        CommonPage<Employee> userCommonPage = CommonPage.restPage(pageResult);
+        CommonPage<Employee> userCommonPage = CommonPage.resetPage(pageResult);
         CommonResult<CommonPage<Employee>> success = CommonResult.success(userCommonPage);
         return success;
     }

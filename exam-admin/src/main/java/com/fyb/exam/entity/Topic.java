@@ -98,6 +98,14 @@ public class Topic implements Serializable {
     private String imageName;
 
     /**
+     * 创建者id
+     */
+    private String creatorId;
+    /**
+     * 最后更新人id
+     */
+    private String lastOperatorId;
+    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

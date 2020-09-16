@@ -37,7 +37,7 @@ public class RecordController {
         recordPage.setSize(pageParam.getPageSize());
         recordPage.setCurrent(pageParam.getPageNum());
         IPage<Record> pageResult = recordService.page(recordPage);
-        CommonPage<Record> userCommonPage = CommonPage.restPage(pageResult);
+        CommonPage<Record> userCommonPage = CommonPage.resetPage(pageResult);
         CommonResult<CommonPage<Record>> success = CommonResult.success(userCommonPage);
         return success;
     }

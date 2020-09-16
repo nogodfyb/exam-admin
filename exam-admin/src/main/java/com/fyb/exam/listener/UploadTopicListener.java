@@ -37,15 +37,22 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
 
     private ArrayList<TopicExcelVo> topicExcelVos;
 
+
+    private String creatorId;
+
+    private Integer areaId;
+
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      *
      * @param topicService
      * @param topicExcelVos
      */
-    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos) {
+    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos,String creatorId,Integer areaId) {
         this.topicService = topicService;
         this.topicExcelVos=topicExcelVos;
+        this.creatorId=creatorId;
+        this.areaId=areaId;
     }
 
     /**
@@ -145,6 +152,9 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             topic.setCorrectAnswer(topicExcelVo.getCorrectAnswer());
             topic.setCreateTime(LocalDateTime.now());
             topic.setUpdateTime(LocalDateTime.now());
+            topic.setCreatorId(creatorId);
+            topic.setAreaId(areaId);
+            topic.setLastOperatorId(creatorId);
             topics.add(topic);
         }
         topicService.saveBatch(topics, BATCH_COUNT);

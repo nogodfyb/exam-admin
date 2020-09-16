@@ -20,7 +20,7 @@ public class CommonPage<T> {
     private List<T> list;
 
     //转化
-    public static <T> CommonPage<T> restPage(IPage<T> iPage) {
+    public static <T> CommonPage<T> resetPage(IPage<T> iPage) {
         CommonPage<T> result = new CommonPage<>();
         result.setPageNum((int) iPage.getCurrent());
         result.setPageSize((int) iPage.getSize());

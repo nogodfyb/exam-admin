@@ -8,6 +8,7 @@ import com.fyb.exam.common.CommonPage;
 import com.fyb.exam.common.CommonResult;
 import com.fyb.exam.common.Const;
 import com.fyb.exam.dto.LoginLogPageParam;
+import com.fyb.exam.entity.AdminUser;
 import com.fyb.exam.entity.Image;
 import com.fyb.exam.entity.Topic;
 import com.fyb.exam.listener.UploadTopicListener;
@@ -51,25 +52,37 @@ public class TopicController {
     @Autowired
     IImageService imageService;
 
+
+    private Integer getCurrentUserAreaId(HttpSession session){
+        AdminUser currentUser = (AdminUser)session.getAttribute(Const.CURRENT_USER);
+        return currentUser.getAreaId();
+    }
+
+    private String getCurrentUserName(HttpSession session){
+        AdminUser currentUser = (AdminUser)session.getAttribute(Const.CURRENT_USER);
+        return currentUser.getUserName();
+    }
+
     //分页查询
     @GetMapping("/topics")
-    public CommonResult<CommonPage<Topic>> queryAllUsers(@Valid LoginLogPageParam pageParam) {
+    public CommonResult<CommonPage<Topic>> queryAllUsers(@Valid LoginLogPageParam pageParam,HttpSession session) {
         Page<Topic> topicPage = new Page<>();
         topicPage.setSize(pageParam.getPageSize());
         topicPage.setCurrent(pageParam.getPageNum());
         //构造条件
         QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-        topicQueryWrapper.eq("is_deleted", false);
+        topicQueryWrapper.eq("is_deleted", false).eq("area_id",getCurrentUserAreaId(session));
         IPage<Topic> pageResult = topicService.page(topicPage, topicQueryWrapper);
-        CommonPage<Topic> userCommonPage = CommonPage.restPage(pageResult);
+        CommonPage<Topic> userCommonPage = CommonPage.resetPage(pageResult);
         CommonResult<CommonPage<Topic>> success = CommonResult.success(userCommonPage);
         return success;
     }
 
     //更新题目
-    @PutMapping("/topics/{id}")
-    public CommonResult<Object> updateTopic(@RequestBody Topic topic, @PathVariable Integer id) {
+    @PutMapping("/topics")
+    public CommonResult<Object> updateTopic(@RequestBody Topic topic,HttpSession session) {
         topic.setUpdateTime(LocalDateTime.now());
+        topic.setLastOperatorId(getCurrentUserName(session));
         boolean update = topicService.updateById(topic);
         return update ? CommonResult.success(null) : CommonResult.failed();
     }
@@ -114,7 +127,7 @@ public class TopicController {
     @ResponseBody
     public String upload(MultipartFile file, HttpSession session) throws IOException {
         ArrayList<TopicExcelVo> topicExcelVos = new ArrayList<>();
-        EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService,topicExcelVos)).sheet().doRead();
+        EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService,topicExcelVos,getCurrentUserName(session),getCurrentUserAreaId(session))).sheet().doRead();
         if (topicExcelVos.size()!=0) {
             session.setAttribute(Const.CURRENT_FAIL_LIST,topicExcelVos);
         }
@@ -123,7 +136,7 @@ public class TopicController {
 
     //上传题干附件图片
     @PostMapping("uploadImage/{id}")
-    public String uploadImageForWebApp(MultipartFile file, @PathVariable Integer id) {
+    public String uploadImageForWebApp(MultipartFile file, @PathVariable Integer id,HttpSession session) {
         if (file.isEmpty()) {
             return "file is empty";
         }
@@ -146,6 +159,7 @@ public class TopicController {
             topic.setId(id);
             topic.setImageName(fileName);
             topic.setUpdateTime(LocalDateTime.now());
+            topic.setLastOperatorId(getCurrentUserName(session));
             topicService.updateById(topic);
         } catch (IOException e) {
             e.printStackTrace();
@@ -155,7 +169,7 @@ public class TopicController {
 
     //上传题目选项附件图片
     @PostMapping("uploadImageItem/{id}")
-    public String uploadImage(MultipartFile file, @PathVariable Integer id, String select) {
+    public String uploadImage(MultipartFile file, @PathVariable Integer id, String select,HttpSession session) {
         if (file.isEmpty()) {
             return "file is empty";
         }
@@ -203,6 +217,7 @@ public class TopicController {
             //更新topic
             topic.setId(id);
             topic.setUpdateTime(LocalDateTime.now());
+            topic.setLastOperatorId(getCurrentUserName(session));
             topicService.updateById(topic);
         } catch (IOException e) {
             e.printStackTrace();
@@ -212,10 +227,13 @@ public class TopicController {
 
     //添加选项仅为图片的题目
     @PostMapping("/add")
-    public CommonResult<Object> add(@RequestBody Topic topic) {
+    public CommonResult<Object> add(@RequestBody Topic topic,HttpSession session) {
         topic.setIsGraphic(true);
         topic.setCreateTime(LocalDateTime.now());
         topic.setUpdateTime(LocalDateTime.now());
+        topic.setCreatorId(getCurrentUserName(session));
+        topic.setLastOperatorId(getCurrentUserName(session));
+        topic.setAreaId(getCurrentUserAreaId(session));
         boolean save = topicService.save(topic);
         return save ? CommonResult.success(null) : CommonResult.failed();
     }
