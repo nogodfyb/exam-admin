@@ -125,13 +125,15 @@ public class TopicController {
     //批量上传题目
     @PostMapping("upload")
     @ResponseBody
-    public String upload(MultipartFile file, HttpSession session) throws IOException {
+    public CommonResult<Object> upload(MultipartFile file, HttpSession session) throws IOException {
         ArrayList<TopicExcelVo> topicExcelVos = new ArrayList<>();
-        EasyExcel.read(file.getInputStream(), TopicExcelVo.class, new UploadTopicListener(topicService,topicExcelVos,getCurrentUserName(session),getCurrentUserAreaId(session))).sheet().doRead();
+        UploadTopicListener uploadTopicListener = new UploadTopicListener(topicService, topicExcelVos, getCurrentUserName(session), getCurrentUserAreaId(session));
+        EasyExcel.read(file.getInputStream(), TopicExcelVo.class,
+                uploadTopicListener).sheet().doRead();
         if (topicExcelVos.size()!=0) {
             session.setAttribute(Const.CURRENT_FAIL_LIST,topicExcelVos);
         }
-        return "success";
+        return CommonResult.success("上传结果：成功"+uploadTopicListener.getSuccessCount()+"条;失败"+uploadTopicListener.getFailCount()+"条");
     }
 
     //上传题干附件图片
@@ -247,4 +249,5 @@ public class TopicController {
         boolean update = topicService.updateById(topic);
         return update ? CommonResult.success(null) : CommonResult.failed();
     }
+
 }

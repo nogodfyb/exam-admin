@@ -2,6 +2,7 @@ package com.fyb.exam.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fyb.exam.common.Const;
 import com.fyb.exam.entity.Topic;
 import com.fyb.exam.service.ITopicService;
@@ -37,10 +38,21 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
 
     private ArrayList<TopicExcelVo> topicExcelVos;
 
-
     private String creatorId;
 
     private Integer areaId;
+
+    private int successCount=0;
+
+    private int failCount=0;
+
+    public int getSuccessCount() {
+        return successCount;
+    }
+
+    public int getFailCount() {
+        return failCount;
+    }
 
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
@@ -92,8 +104,20 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
         LOGGER.info("{}条数据，开始存储数据库！", list.size());
         ArrayList<Topic> topics = new ArrayList<>();
         for (TopicExcelVo topicExcelVo : list) {
-            if (StringUtils.isEmpty(topicExcelVo.getTopicDesc())) {
-                //如果topic的题干为空，跳过
+            //题干不能为空，题型不能为空，正确选项不能为空
+            if (StringUtils.isEmpty(topicExcelVo.getTopicDesc())||StringUtils.isEmpty(topicExcelVo.getCorrectAnswer())
+                    ||topicExcelVo.getType()==null) {
+                topicExcelVos.add(topicExcelVo);
+                failCount++;
+                continue;
+            }
+            //题干重复的
+            QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
+            topicQueryWrapper.eq("topic_desc",topicExcelVo.getTopicDesc());
+            Topic one = topicService.getOne(topicQueryWrapper);
+            if (one!=null) {
+                topicExcelVos.add(topicExcelVo);
+                failCount++;
                 continue;
             }
             //单选题
@@ -101,6 +125,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
                 String correctAnswer = topicExcelVo.getCorrectAnswer();
                 if (correctAnswer.length() > 1) {
                     topicExcelVos.add(topicExcelVo);
+                    failCount++;
                     continue;
                 }
             }
@@ -120,10 +145,12 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
                 }
                 if(count!=2){
                     topicExcelVos.add(topicExcelVo);
+                    failCount++;
                     continue;
                 }
                 if(!topicExcelVo.getCorrectAnswer().equals("A")&&!topicExcelVo.getCorrectAnswer().equals("B")){
                     topicExcelVos.add(topicExcelVo);
+                    failCount++;
                     continue;
                 }
             }
@@ -132,12 +159,14 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
                 String correctAnswer = topicExcelVo.getCorrectAnswer();
                 if (!(correctAnswer.length()>1)) {
                     topicExcelVos.add(topicExcelVo);
+                    failCount++;
                     continue;
                 }
             }
             //题型不在这三种范围的
             if(topicExcelVo.getType()!=1&&topicExcelVo.getType()!=2&&topicExcelVo.getType()!=3){
                 topicExcelVos.add(topicExcelVo);
+                failCount++;
                 continue;
             }
             Topic topic = new Topic();
@@ -156,6 +185,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             topic.setAreaId(areaId);
             topic.setLastOperatorId(creatorId);
             topics.add(topic);
+            successCount++;
         }
         topicService.saveBatch(topics, BATCH_COUNT);
         LOGGER.info("存储数据库成功！");

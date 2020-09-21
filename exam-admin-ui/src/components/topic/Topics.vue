@@ -69,10 +69,7 @@
         </template>
       </el-table-column>
       <el-table-column label="正确选项" prop="correctAnswer" width="100"></el-table-column>
-      <el-table-column label="创建者" prop="creatorId"></el-table-column>
       <el-table-column label="最后更新人" prop="lastOperatorId" width="100"></el-table-column>
-      <el-table-column label="创建时间" prop="createTime" width="180"></el-table-column>
-      <el-table-column label="更新时间" prop="updateTime" width="180"></el-table-column>
       <el-table-column label="操作" width="450px">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row)">编辑</el-button>
@@ -81,6 +78,7 @@
           <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteTopic(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
+      <el-table-column label="更新时间" prop="updateTime" width="180"></el-table-column>
     </el-table>
 <!--    分页区域-->
     <el-pagination
@@ -104,7 +102,7 @@
       drag with-credentials
       :on-success="afterUpload"
       :action="BASE_REQUEST_PATH+'exam/topic/upload'"
-      multiple>
+      ref="uploadExcel">
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       <div class="el-upload__tip" slot="tip">只能上传xlsx文件，且不超过500kb</div>
@@ -358,9 +356,12 @@ export default {
       }
     },
     uploadDialogClosed () {
+      // 清空上传文件列表
+      this.$refs.uploadExcel.clearFiles()
       this.getList()
     },
-    async afterUpload () {
+    async afterUpload (response) {
+      this.$message.success({ message: response.msg, duration: 10000 })
       const { data: res } = await this.$http.get('topic/confirm')
       if (res.status === 200) {
         this.$message.warning({
@@ -370,6 +371,7 @@ export default {
         })
         window.location.href = this.BASE_REQUEST_PATH + 'exam/topic/download/exception'
       }
+      this.uploadDialogVisible = false
     },
     uploadImgDialogClosed () {
       this.getList()

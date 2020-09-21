@@ -27,6 +27,16 @@ public class CommonResult<T> {
     }
 
     /**
+     * 操作成功返回
+     * @param msg 成功消息
+     * @param <T>
+     * @return
+     */
+    public static <T> CommonResult<T> success(String msg) {
+        return new CommonResult<T>(ResultCodeEnum.SUCCESS.getCode(), msg, null);
+    }
+
+    /**
      * 操作失败返回结果
      *
      *
