@@ -249,5 +249,11 @@ public class TopicController {
         boolean update = topicService.updateById(topic);
         return update ? CommonResult.success(null) : CommonResult.failed();
     }
+    //根据id查询题目
+    @GetMapping("/topics/{id}")
+    public CommonResult<Topic> selectTopicById(@PathVariable Integer id){
+        Topic topic = topicService.getById(id);
+        return topic==null?CommonResult.failed():CommonResult.success(topic);
+    }
 
 }

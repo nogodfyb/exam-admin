@@ -54,14 +54,14 @@
           <p v-if="scope.row.isGraphic===false">{{scope.row.answer4}}</p>
         </template>
       </el-table-column>
-      <el-table-column label="选项E"  width="125">
+      <el-table-column label="选项E"  width="125" v-if="answer5Exist">
         <template slot-scope="scope">
           <el-image v-if="scope.row.isGraphic===true&&scope.row.answer5!==null" fit="cover" :src="BASE_REQUEST_IMG_PATH+scope.row.answer5" style="width: 100px;height: 100px">
           </el-image>
           <p v-if="scope.row.isGraphic===false">{{scope.row.answer5}}</p>
         </template>
       </el-table-column>
-      <el-table-column label="选项F"  width="125">
+      <el-table-column label="选项F"  width="125" v-if="answer6Exist">
         <template slot-scope="scope">
           <el-image v-if="scope.row.isGraphic===true&&scope.row.answer6!==null" fit="cover" :src="BASE_REQUEST_IMG_PATH+scope.row.answer6" style="width: 100px;height: 100px">
           </el-image>
@@ -95,8 +95,15 @@
   <el-dialog
     title="上传数据"
     :visible.sync="uploadDialogVisible"
-    width="30%" @close="uploadDialogClosed"
+    width="50%" @close="uploadDialogClosed"
   >
+    <el-form ref="uploadForm" :model="uploadForm" label-width="80px">
+      <el-form-item label="产品线">
+        <el-select v-model="uploadForm.region" placeholder="请选择产品线">
+          <el-option v-for="item in currentProductLines" :key="item.id" :label="item.productLineName" :value="item.id"></el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
     <el-upload
       class="upload-demo"
       drag with-credentials
@@ -203,40 +210,88 @@
       </div>
       <div v-if="editForm.isGraphic===true">
         <el-form-item label="选项A">
-          <el-upload  drag with-credentials :action="uploadImgPathA" multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
+          <el-row>
+            <el-col :span="16">
+              <el-upload  drag with-credentials :action="uploadImgPathA" :on-success="afterImgUpload">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-col>
+            <el-col :span="8">
+              <el-image fit="cover" v-if="editForm.answer1!==null" :src="BASE_REQUEST_IMG_PATH+editForm.answer1" style="width: 200px;height: 200px">
+              </el-image>
+            </el-col>
+          </el-row>
         </el-form-item>
         <el-form-item label="选项B">
-          <el-upload  drag with-credentials :action="uploadImgPathB" multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
+          <el-row>
+            <el-col :span="16">
+              <el-upload  drag with-credentials :action="uploadImgPathB" :on-success="afterImgUpload">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-col>
+            <el-col :span="8">
+              <el-image fit="cover" v-if="editForm.answer2!==null" :src="BASE_REQUEST_IMG_PATH+editForm.answer2" style="width: 200px;height: 200px">
+              </el-image>
+            </el-col>
+          </el-row>
         </el-form-item>
         <el-form-item label="选项C">
-          <el-upload  drag with-credentials :action="uploadImgPathC" multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
+          <el-row>
+            <el-col :span="16">
+              <el-upload  drag with-credentials :action="uploadImgPathC" :on-success="afterImgUpload">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-col>
+            <el-col :span="8">
+              <el-image fit="cover" v-if="editForm.answer3!==null" :src="BASE_REQUEST_IMG_PATH+editForm.answer3" style="width: 200px;height: 200px">
+              </el-image>
+            </el-col>
+          </el-row>
         </el-form-item>
         <el-form-item label="选项D">
-          <el-upload  drag with-credentials :action="uploadImgPathD" multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
+          <el-row>
+            <el-col :span="16">
+              <el-upload  drag with-credentials :action="uploadImgPathD" :on-success="afterImgUpload">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-col>
+            <el-col :span="8">
+              <el-image fit="cover" v-if="editForm.answer4!==null" :src="BASE_REQUEST_IMG_PATH+editForm.answer4" style="width: 200px;height: 200px">
+              </el-image>
+            </el-col>
+          </el-row>
         </el-form-item>
         <el-form-item label="选项E">
-          <el-upload  drag with-credentials :action="uploadImgPathE" multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
+          <el-row>
+            <el-col :span="16">
+              <el-upload  drag with-credentials :action="uploadImgPathE" :on-success="afterImgUpload">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-col>
+            <el-col :span="8">
+              <el-image fit="cover" v-if="editForm.answer5!==null" :src="BASE_REQUEST_IMG_PATH+editForm.answer5" style="width: 200px;height: 200px">
+              </el-image>
+            </el-col>
+          </el-row>
         </el-form-item>
         <el-form-item label="选项F">
-          <el-upload  drag with-credentials :action="uploadImgPathF" multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
+          <el-row>
+            <el-col :span="16">
+              <el-upload  drag with-credentials :action="uploadImgPathF" :on-success="afterImgUpload">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-col>
+            <el-col :span="8">
+              <el-image fit="cover" v-if="editForm.answer6!==null" :src="BASE_REQUEST_IMG_PATH+editForm.answer6" style="width: 200px;height: 200px">
+              </el-image>
+            </el-col>
+          </el-row>
         </el-form-item>
       </div>
     </el-form>
@@ -268,8 +323,11 @@ export default {
       },
       editForm: {
       },
+      uploadForm: {
+      },
       list: [],
       areasInformation: [],
+      currentProductLines: [],
       total: 0,
       uploadDialogVisible: false,
       uploadImgDialogVisible: false,
@@ -305,6 +363,25 @@ export default {
     }
     this.getList()
     this.getAreasInformation()
+    this.getProductLines()
+  },
+  computed: {
+    answer5Exist () {
+      for (let i = 0; i < this.list.length; i++) {
+        if (this.list[i].answer5 !== null) {
+          return true
+        }
+      }
+      return false
+    },
+    answer6Exist () {
+      for (let i = 0; i < this.list.length; i++) {
+        if (this.list[i].answer6 !== null) {
+          return true
+        }
+      }
+      return false
+    }
   },
   methods: {
     async getAreasInformation () {
@@ -313,6 +390,13 @@ export default {
         return this.$message.error('获取区域信息失败!')
       }
       this.areasInformation = res.data
+    },
+    async getProductLines () {
+      const { data: res } = await this.$http.get('product-line/list')
+      if (res.status !== 200) {
+        return this.$message.error('获取所有产品线失败!')
+      }
+      this.currentProductLines = res.data
     },
     async getList () {
       const { data: res } = await this.$http.get('topic/topics', { params: this.queryInfo })
@@ -372,6 +456,13 @@ export default {
         window.location.href = this.BASE_REQUEST_PATH + 'exam/topic/download/exception'
       }
       this.uploadDialogVisible = false
+    },
+    async afterImgUpload () {
+      const { data: res } = await this.$http.get(`topic/topics/${this.editForm.id}`)
+      if (res.status !== 200) {
+        return this.$message.error('更新当前题目图片路径失败!')
+      }
+      this.editForm = res.data
     },
     uploadImgDialogClosed () {
       this.getList()
@@ -470,10 +561,11 @@ export default {
       })
       this.getList()
     }
+
   }
 }
 </script>
 
-<style scoped>
-
+<style>
+  .el-table__body tr.hover-row>td { background-color: lightskyblue !important; }
 </style>

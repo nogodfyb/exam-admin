@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -103,6 +104,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
     private void saveData() {
         LOGGER.info("{}条数据，开始存储数据库！", list.size());
         ArrayList<Topic> topics = new ArrayList<>();
+        HashSet<String> hashSet = new HashSet<>();
         for (TopicExcelVo topicExcelVo : list) {
             //题干不能为空，题型不能为空，正确选项不能为空
             if (StringUtils.isEmpty(topicExcelVo.getTopicDesc())||StringUtils.isEmpty(topicExcelVo.getCorrectAnswer())
@@ -111,11 +113,17 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
                 failCount++;
                 continue;
             }
-            //题干重复的
+            //题干与数据库已有重复的
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
             topicQueryWrapper.eq("topic_desc",topicExcelVo.getTopicDesc());
             Topic one = topicService.getOne(topicQueryWrapper);
             if (one!=null) {
+                topicExcelVos.add(topicExcelVo);
+                failCount++;
+                continue;
+            }
+            //即将批量存储的这5条数据中存在题干重复的
+            if(!hashSet.add(topicExcelVo.getTopicDesc())){
                 topicExcelVos.add(topicExcelVo);
                 failCount++;
                 continue;

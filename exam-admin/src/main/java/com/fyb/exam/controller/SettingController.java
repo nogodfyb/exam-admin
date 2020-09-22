@@ -67,7 +67,7 @@ public class SettingController {
 
     public Long getMinSize(Integer type){
         QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-        topicQueryWrapper.select("area_id","count(*)").groupBy("area_id").eq("type",type);
+        topicQueryWrapper.select("area_id","count(*)").groupBy("area_id").eq("type",type).eq("is_deleted",0);
         List<Map<String, Object>> maps = topicService.listMaps(topicQueryWrapper);
         List<Long> collect = maps.stream().map(map -> (Long)map.get("count(*)")).collect(Collectors.toList());
         Collections.sort(collect);
