@@ -31,10 +31,6 @@ public class Topic implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    /**
-     * 区域id，指向区域表主键
-     */
-    private Integer areaId;
 
     /**
      * 题目描述，题干信息

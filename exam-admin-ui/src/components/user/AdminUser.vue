@@ -25,7 +25,7 @@
       <el-table-column label="工号" prop="userName"></el-table-column>
       <el-table-column label="创建时间" prop="createTime"></el-table-column>
       <el-table-column label="更新时间" prop="updateTime"></el-table-column>
-      <el-table-column label="区域" prop="areaId" :formatter="formatter"></el-table-column>
+      <el-table-column label="工段"  :formatter="formatter"></el-table-column>
       <el-table-column label="操作" width="200px">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)">编辑</el-button>
@@ -58,9 +58,9 @@
       <el-form-item label="密码" prop="password">
         <el-input v-model="addForm.password"></el-input>
       </el-form-item>
-      <el-form-item label="区域" prop="areaId">
-        <el-select v-model="addForm.areaId" placeholder="请选择区域">
-          <el-option v-for="item in areasInformation" :key="item.id" :label="item.areaName" :value="item.id"></el-option>
+      <el-form-item label="工段" prop="workSectionId">
+        <el-select v-model="addForm.workSectionId" placeholder="请选择区域">
+          <el-option v-for="item in workSections" :key="item.id" :label="item.workSectionName" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
     </el-form>
@@ -84,9 +84,9 @@
       <el-form-item label="密码" prop="password">
         <el-input v-model="editForm.password"></el-input>
       </el-form-item>
-      <el-form-item label="区域" prop="areaId">
-        <el-select v-model="editForm.areaId" placeholder="请选择区域">
-          <el-option v-for="item in areasInformation" :key="item.id" :label="item.areaName" :value="item.id"></el-option>
+      <el-form-item label="工段" prop="areaId">
+        <el-select v-model="editForm.workSectionId" placeholder="请选择区域">
+          <el-option v-for="item in workSections" :key="item.id" :label="item.workSectionName" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
     </el-form>
@@ -115,7 +115,7 @@ export default {
         pageSize: 5
       },
       list: [],
-      areasInformation: [],
+      workSections: [],
       total: 0,
       // 用户对话框的可见性
       dialogVisible: false,
@@ -123,7 +123,7 @@ export default {
       addForm: {
         userName: '',
         password: '',
-        areaId: ''
+        workSectionId: ''
       },
       editForm: {},
       addFormRules: {
@@ -135,8 +135,8 @@ export default {
           { required: true, message: '请输入用户密码', trigger: 'blur' },
           { min: 5, max: 15, message: '长度在 5 到 15 个字符', trigger: 'blur' }
         ],
-        areaId: [
-          { required: true, message: '请选择区域', trigger: 'blur' }
+        workSectionId: [
+          { required: true, message: '请选择工段', trigger: 'blur' }
         ]
       }
     }
@@ -146,15 +146,15 @@ export default {
       this.height -= 120
     }
     this.getList()
-    this.getAreasInformation()
+    this.getWorkSections()
   },
   methods: {
-    async getAreasInformation () {
-      const { data: res } = await this.$http.get('area/list')
+    async getWorkSections () {
+      const { data: res } = await this.$http.get('work-section/list')
       if (res.status !== 200) {
-        return this.$message.error('获取区域信息失败!')
+        return this.$message.error('获取工段信息失败!')
       }
-      this.areasInformation = res.data
+      this.workSections = res.data
     },
     async getList () {
       const { data: res } = await this.$http.get('admin/users', { params: this.queryInfo })
@@ -165,9 +165,9 @@ export default {
       this.total = res.data.total
     },
     formatter (row, column) {
-      for (let i = 0; i < this.areasInformation.length; i++) {
-        if (row.areaId === this.areasInformation[i].id) {
-          return this.areasInformation[i].areaName
+      for (let i = 0; i < this.workSections.length; i++) {
+        if (row.workSectionId === this.workSections[i].id) {
+          return this.workSections[i].workSectionName
         }
       }
     },

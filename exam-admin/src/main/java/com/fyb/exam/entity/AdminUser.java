@@ -42,9 +42,9 @@ public class AdminUser implements Serializable {
     private String password;
 
     /**
-     * 区域id
+     * 工段id
      */
-    private Integer areaId;
+    private Integer workSectionId;
 
     /**
      * 创建时间

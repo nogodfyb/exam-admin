@@ -63,7 +63,7 @@ public class AdminUserController {
             adminUser.setPassword(MD5Utils.encode(adminUser.getPassword()));
             adminUser.setCreateTime(LocalDateTime.now());
             adminUser.setUpdateTime(LocalDateTime.now());
-            adminUser.setAreaId(adminUser.getAreaId());
+            adminUser.setWorkSectionId(adminUser.getWorkSectionId());
             boolean save = adminUserService.save(adminUser);
             if (save) {
                 return CommonResult.success(null);

@@ -55,7 +55,7 @@ public class TopicController {
 
     private Integer getCurrentUserAreaId(HttpSession session){
         AdminUser currentUser = (AdminUser)session.getAttribute(Const.CURRENT_USER);
-        return currentUser.getAreaId();
+        return currentUser.getWorkSectionId();
     }
 
     private String getCurrentUserName(HttpSession session){
@@ -71,7 +71,7 @@ public class TopicController {
         topicPage.setCurrent(pageParam.getPageNum());
         //构造条件
         QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-        topicQueryWrapper.eq("is_deleted", false).eq("area_id",getCurrentUserAreaId(session));
+        topicQueryWrapper.eq("is_deleted", false);
         IPage<Topic> pageResult = topicService.page(topicPage, topicQueryWrapper);
         CommonPage<Topic> userCommonPage = CommonPage.resetPage(pageResult);
         CommonResult<CommonPage<Topic>> success = CommonResult.success(userCommonPage);
@@ -125,9 +125,9 @@ public class TopicController {
     //批量上传题目
     @PostMapping("upload")
     @ResponseBody
-    public CommonResult<Object> upload(MultipartFile file, HttpSession session) throws IOException {
+    public CommonResult<Object> upload(MultipartFile file, HttpSession session,Integer[] postIds) throws IOException {
         ArrayList<TopicExcelVo> topicExcelVos = new ArrayList<>();
-        UploadTopicListener uploadTopicListener = new UploadTopicListener(topicService, topicExcelVos, getCurrentUserName(session), getCurrentUserAreaId(session));
+        UploadTopicListener uploadTopicListener = new UploadTopicListener(topicService, topicExcelVos, getCurrentUserName(session), getCurrentUserAreaId(session),postIds);
         EasyExcel.read(file.getInputStream(), TopicExcelVo.class,
                 uploadTopicListener).sheet().doRead();
         if (topicExcelVos.size()!=0) {
@@ -235,7 +235,6 @@ public class TopicController {
         topic.setUpdateTime(LocalDateTime.now());
         topic.setCreatorId(getCurrentUserName(session));
         topic.setLastOperatorId(getCurrentUserName(session));
-        topic.setAreaId(getCurrentUserAreaId(session));
         boolean save = topicService.save(topic);
         return save ? CommonResult.success(null) : CommonResult.failed();
     }

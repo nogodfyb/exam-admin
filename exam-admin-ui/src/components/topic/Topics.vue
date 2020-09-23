@@ -9,14 +9,14 @@
     <!-- 卡片视图 -->
   <el-card>
     <!-- 搜索与添加区域  -->
-    <el-row :gutter="20">
-      <el-col :span="4">
-        <el-button type="success" @click="showUploadDialog">导入题目数据</el-button>
+    <el-row >
+      <el-col :span="3">
+        <el-button type="success" @click="showUploadDialog" size="medium">导入题目数据</el-button>
       </el-col>
       <el-col :span="4">
-        <el-button type="primary" @click="showAddDialog">添加纯图片选项题</el-button>
+        <el-button type="primary" @click="showAddDialog" size="medium">添加纯图片选项题</el-button>
       </el-col>
-      <el-col :span="4">
+      <el-col :span="2">
         <el-link type="info" :href="BASE_REQUEST_PATH+'exam/topic/download'">下载模板</el-link>
       </el-col>
     </el-row>
@@ -25,7 +25,6 @@
       <el-table-column type="index" fixed></el-table-column>
       <el-table-column label="题干" prop="topicDesc"></el-table-column>
       <el-table-column label="题型" prop="type" :formatter="formatter"></el-table-column>
-      <el-table-column label="区域" prop="areaId" :formatter="formatter2"></el-table-column>
       <el-table-column label="选项A"  width="125">
         <template slot-scope="scope">
           <el-image v-if="scope.row.isGraphic===true&&scope.row.answer1!==null" fit="cover" :src="BASE_REQUEST_IMG_PATH+scope.row.answer1" style="width: 100px;height: 100px">
@@ -69,7 +68,6 @@
         </template>
       </el-table-column>
       <el-table-column label="正确选项" prop="correctAnswer" width="100"></el-table-column>
-      <el-table-column label="最后更新人" prop="lastOperatorId" width="100"></el-table-column>
       <el-table-column label="操作" width="450px">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row)">编辑</el-button>
@@ -78,6 +76,7 @@
           <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteTopic(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
+      <el-table-column label="最后更新人" prop="lastOperatorId" width="100"></el-table-column>
       <el-table-column label="更新时间" prop="updateTime" width="180"></el-table-column>
     </el-table>
 <!--    分页区域-->
@@ -95,19 +94,21 @@
   <el-dialog
     title="上传数据"
     :visible.sync="uploadDialogVisible"
-    width="50%" @close="uploadDialogClosed"
+    width="40%" @close="uploadDialogClosed"
   >
-    <el-form ref="uploadForm" :model="uploadForm" label-width="80px">
-      <el-form-item label="产品线">
-        <el-select v-model="uploadForm.region" placeholder="请选择产品线">
-          <el-option v-for="item in currentProductLines" :key="item.id" :label="item.productLineName" :value="item.id"></el-option>
-        </el-select>
+    <el-form ref="uploadForm" :model="uploadForm"  label-width="100px">
+      <el-form-item label="产品线和岗位">
+        <el-cascader
+          :options="options" v-model="selectKeys"
+          :props="props"
+          placeholder="请选择产品线和岗位" style="margin-bottom: 10px"
+          clearable></el-cascader>
       </el-form-item>
     </el-form>
     <el-upload
       class="upload-demo"
-      drag with-credentials
-      :on-success="afterUpload"
+      drag with-credentials :before-upload="beforeUpload"
+      :on-success="afterUpload" :data="uploadForm"
       :action="BASE_REQUEST_PATH+'exam/topic/upload'"
       ref="uploadExcel">
       <i class="el-icon-upload"></i>
@@ -309,6 +310,9 @@ import config from '../../util/config'
 export default {
   data () {
     return {
+      selectKeys: [],
+      props: { multiple: true, expandTrigger: 'hover' },
+      options: [],
       height: 500,
       // 获取登录日志列表的参数对象
       queryInfo: {
@@ -324,10 +328,10 @@ export default {
       editForm: {
       },
       uploadForm: {
+        postIds: []
       },
       list: [],
       areasInformation: [],
-      currentProductLines: [],
       total: 0,
       uploadDialogVisible: false,
       uploadImgDialogVisible: false,
@@ -381,6 +385,9 @@ export default {
         }
       }
       return false
+    },
+    postIds () {
+      return this.selectKeys.map(childArr => childArr[1])
     }
   },
   methods: {
@@ -394,9 +401,9 @@ export default {
     async getProductLines () {
       const { data: res } = await this.$http.get('product-line/list')
       if (res.status !== 200) {
-        return this.$message.error('获取所有产品线失败!')
+        return this.$message.error('获取所有产品线及岗位的二级分类失败!')
       }
-      this.currentProductLines = res.data
+      this.options = res.data
     },
     async getList () {
       const { data: res } = await this.$http.get('topic/topics', { params: this.queryInfo })
@@ -443,6 +450,11 @@ export default {
       // 清空上传文件列表
       this.$refs.uploadExcel.clearFiles()
       this.getList()
+      // 清空上传excel导入题目的uploadForm
+      this.selectKeys = []
+    },
+    beforeUpload () {
+      this.uploadForm.postIds = this.postIds
     },
     async afterUpload (response) {
       this.$message.success({ message: response.msg, duration: 10000 })
@@ -481,13 +493,6 @@ export default {
       if (row.type === 1) {
         return '单选'
       } else { return row.type === 2 ? '判断' : '多选' }
-    },
-    formatter2 (row, column) {
-      for (let i = 0; i < this.areasInformation.length; i++) {
-        if (row.areaId === this.areasInformation[i].id) {
-          return this.areasInformation[i].areaName
-        }
-      }
     },
     uploadImage (id) {
       this.uploadImgDialogVisible = true

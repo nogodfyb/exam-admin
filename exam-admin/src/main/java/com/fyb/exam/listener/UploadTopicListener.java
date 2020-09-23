@@ -37,11 +37,14 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
      */
     private ITopicService topicService;
 
+    //存储异常数据的list
     private ArrayList<TopicExcelVo> topicExcelVos;
 
     private String creatorId;
 
     private Integer areaId;
+
+    private Integer[] postIds;
 
     private int successCount=0;
 
@@ -57,15 +60,16 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
 
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
-     *
-     * @param topicService
+     *  @param topicService
      * @param topicExcelVos
+     * @param postIds
      */
-    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos,String creatorId,Integer areaId) {
+    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos, String creatorId, Integer areaId, Integer[] postIds) {
         this.topicService = topicService;
         this.topicExcelVos=topicExcelVos;
         this.creatorId=creatorId;
         this.areaId=areaId;
+        this.postIds=postIds;
     }
 
     /**
@@ -103,7 +107,6 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
      */
     private void saveData() {
         LOGGER.info("{}条数据，开始存储数据库！", list.size());
-        ArrayList<Topic> topics = new ArrayList<>();
         HashSet<String> hashSet = new HashSet<>();
         for (TopicExcelVo topicExcelVo : list) {
             //题干不能为空，题型不能为空，正确选项不能为空
@@ -190,12 +193,10 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             topic.setCreateTime(LocalDateTime.now());
             topic.setUpdateTime(LocalDateTime.now());
             topic.setCreatorId(creatorId);
-            topic.setAreaId(areaId);
             topic.setLastOperatorId(creatorId);
-            topics.add(topic);
+            topicService.save(topic);
             successCount++;
         }
-        topicService.saveBatch(topics, BATCH_COUNT);
         LOGGER.info("存储数据库成功！");
     }
 }

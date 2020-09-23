@@ -33,7 +33,7 @@ public class WorkSectionController {
     @Autowired
     private IWorkSectionService workSectionService;
 
-    //在知当前产线id的情况下，查询当前岗位有多少工段
+    //在已知当前产线id的情况下，查询当前岗位表有多少工段
     @GetMapping("{productLineId}")
     public CommonResult<List<WorkSection>> list(@PathVariable Integer productLineId){
         QueryWrapper<Post> postQueryWrapper = new QueryWrapper<>();
@@ -41,5 +41,12 @@ public class WorkSectionController {
         List<Integer> list =(List<Integer>)(List<?>) postService.listObjs(postQueryWrapper);
         List<WorkSection> workSections = workSectionService.listByIds(list);
         return CommonResult.success(workSections);
+    }
+
+    //查询当前所有工段信息
+    @GetMapping("list")
+    public CommonResult<List<WorkSection>> listAll(){
+        List<WorkSection> list = workSectionService.list();
+        return CommonResult.success(list);
     }
 }
