@@ -42,7 +42,7 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
 
     private String creatorId;
 
-    private Integer areaId;
+    private Integer workSectionId;
 
     private Integer[] postIds;
 
@@ -64,11 +64,11 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
      * @param topicExcelVos
      * @param postIds
      */
-    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos, String creatorId, Integer areaId, Integer[] postIds) {
+    public UploadTopicListener(ITopicService topicService, ArrayList<TopicExcelVo> topicExcelVos, String creatorId, Integer workSectionId, Integer[] postIds) {
         this.topicService = topicService;
         this.topicExcelVos=topicExcelVos;
         this.creatorId=creatorId;
-        this.areaId=areaId;
+        this.workSectionId = workSectionId;
         this.postIds=postIds;
     }
 
@@ -194,7 +194,9 @@ public class UploadTopicListener extends AnalysisEventListener<TopicExcelVo> {
             topic.setUpdateTime(LocalDateTime.now());
             topic.setCreatorId(creatorId);
             topic.setLastOperatorId(creatorId);
+            topic.setWorkSectionId(workSectionId);
             topicService.save(topic);
+            topicService.saveRelations(postIds,topic.getId());
             successCount++;
         }
         LOGGER.info("存储数据库成功！");

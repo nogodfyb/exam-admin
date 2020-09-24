@@ -9,7 +9,9 @@ import com.fyb.exam.common.CommonResult;
 import com.fyb.exam.common.Const;
 import com.fyb.exam.dto.EmployeePageParam;
 import com.fyb.exam.entity.AdminUser;
+import com.fyb.exam.entity.WorkSection;
 import com.fyb.exam.service.IAdminUserService;
+import com.fyb.exam.service.IWorkSectionService;
 import com.fyb.exam.util.MD5Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -34,9 +36,17 @@ public class AdminUserController {
     @Autowired
     private IAdminUserService adminUserService;
 
+    @Autowired
+    private IWorkSectionService workSectionService;
+
     private String getCurrentUserName(HttpSession session){
         AdminUser currentUser = (AdminUser)session.getAttribute(Const.CURRENT_USER);
         return currentUser.getUserName();
+    }
+
+    private AdminUser getCurrent(HttpSession session){
+        AdminUser currentUser = (AdminUser)session.getAttribute(Const.CURRENT_USER);
+        return currentUser;
     }
 
     //分页查询
@@ -105,6 +115,14 @@ public class AdminUserController {
             boolean remove = adminUserService.removeById(id);
             return remove?CommonResult.success(null):CommonResult.failed();
         }else return CommonResult.forbidden();
+    }
+    //查询当前管理员所属的工段名称
+    @GetMapping("workSectionName")
+    public CommonResult<WorkSection> selectCurrentWorkSection(HttpSession session){
+        AdminUser current = getCurrent(session);
+        //根据工段id查询工段名称
+        WorkSection workSection = workSectionService.getById(current.getWorkSectionId());
+        return CommonResult.success(workSection);
     }
 
 }

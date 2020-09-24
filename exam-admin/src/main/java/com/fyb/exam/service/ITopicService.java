@@ -15,4 +15,7 @@ public interface ITopicService extends IService<Topic> {
 
     //保存题目与岗位之间的关系
     void saveRelations(Integer[] postIds, Integer topicId);
+
+    //更新题目与岗位之间的关系
+    void updateRelations(Integer[] postIds, Integer topicId);
 }

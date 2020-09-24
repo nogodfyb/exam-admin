@@ -43,6 +43,11 @@ public class Topic implements Serializable {
     private Integer type;
 
     /**
+     * 工段id
+     */
+    private Integer workSectionId;
+
+    /**
      * 答案1
      */
     private String answer1;
@@ -83,6 +88,11 @@ public class Topic implements Serializable {
      */
     private Boolean isDeleted;
 
+    /**
+     * 是否必答
+     */
+
+    private Boolean isMust;
     /**
      * 正确答案的序号
      */

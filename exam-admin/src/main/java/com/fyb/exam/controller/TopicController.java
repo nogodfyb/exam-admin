@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fyb.exam.common.CommonPage;
 import com.fyb.exam.common.CommonResult;
 import com.fyb.exam.common.Const;
-import com.fyb.exam.dto.LoginLogPageParam;
+import com.fyb.exam.dto.TopicPageParam;
 import com.fyb.exam.entity.AdminUser;
 import com.fyb.exam.entity.Image;
 import com.fyb.exam.entity.Topic;
@@ -15,11 +15,11 @@ import com.fyb.exam.listener.UploadTopicListener;
 import com.fyb.exam.service.IImageService;
 import com.fyb.exam.service.ITopicService;
 import com.fyb.exam.vo.TopicExcelVo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -44,16 +44,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/exam/topic")
 public class TopicController {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(TopicController.class);
     @Autowired
     ITopicService topicService;
     @Autowired
     IImageService imageService;
-
-
-    private Integer getCurrentUserAreaId(HttpSession session){
+    private Integer getCurrentWorkSectionId(HttpSession session){
         AdminUser currentUser = (AdminUser)session.getAttribute(Const.CURRENT_USER);
         return currentUser.getWorkSectionId();
     }
@@ -63,15 +58,18 @@ public class TopicController {
         return currentUser.getUserName();
     }
 
-    //分页查询
+    //分页查询,登录的后台管理员属于哪个工段，查询的题目属于那个工段
     @GetMapping("/topics")
-    public CommonResult<CommonPage<Topic>> queryAllUsers(@Valid LoginLogPageParam pageParam,HttpSession session) {
+    public CommonResult<CommonPage<Topic>> queryAllTopics(@Valid TopicPageParam pageParam, HttpSession session) {
         Page<Topic> topicPage = new Page<>();
         topicPage.setSize(pageParam.getPageSize());
         topicPage.setCurrent(pageParam.getPageNum());
         //构造条件
         QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-        topicQueryWrapper.eq("is_deleted", false);
+        topicQueryWrapper.eq("is_deleted", false).eq("work_section_id",getCurrentWorkSectionId(session));
+        if(!StringUtils.isEmpty(pageParam.getTopicDesc())){
+            topicQueryWrapper.like("topic_desc",pageParam.getTopicDesc());
+        }
         IPage<Topic> pageResult = topicService.page(topicPage, topicQueryWrapper);
         CommonPage<Topic> userCommonPage = CommonPage.resetPage(pageResult);
         CommonResult<CommonPage<Topic>> success = CommonResult.success(userCommonPage);
@@ -127,7 +125,7 @@ public class TopicController {
     @ResponseBody
     public CommonResult<Object> upload(MultipartFile file, HttpSession session,Integer[] postIds) throws IOException {
         ArrayList<TopicExcelVo> topicExcelVos = new ArrayList<>();
-        UploadTopicListener uploadTopicListener = new UploadTopicListener(topicService, topicExcelVos, getCurrentUserName(session), getCurrentUserAreaId(session),postIds);
+        UploadTopicListener uploadTopicListener = new UploadTopicListener(topicService, topicExcelVos, getCurrentUserName(session), getCurrentWorkSectionId(session),postIds);
         EasyExcel.read(file.getInputStream(), TopicExcelVo.class,
                 uploadTopicListener).sheet().doRead();
         if (topicExcelVos.size()!=0) {
@@ -235,6 +233,7 @@ public class TopicController {
         topic.setUpdateTime(LocalDateTime.now());
         topic.setCreatorId(getCurrentUserName(session));
         topic.setLastOperatorId(getCurrentUserName(session));
+        topic.setWorkSectionId(getCurrentWorkSectionId(session));
         boolean save = topicService.save(topic);
         return save ? CommonResult.success(null) : CommonResult.failed();
     }

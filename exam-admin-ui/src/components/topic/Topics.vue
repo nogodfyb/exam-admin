@@ -9,7 +9,12 @@
     <!-- 卡片视图 -->
   <el-card>
     <!-- 搜索与添加区域  -->
-    <el-row >
+    <el-row :gutter="20">
+      <el-col :span="9">
+        <el-input placeholder="请输入题干信息" v-model="queryInfo.topicDesc" clearable @clear="search">
+          <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
+        </el-input>
+      </el-col>
       <el-col :span="3">
         <el-button type="success" @click="showUploadDialog" size="medium">导入题目数据</el-button>
       </el-col>
@@ -21,7 +26,7 @@
       </el-col>
     </el-row>
     <!-- 题目列表区域 -->
-    <el-table :data="list" border stripe :height="height">
+    <el-table :data="list" border  :height="height">
       <el-table-column type="index" fixed></el-table-column>
       <el-table-column label="题干" prop="topicDesc"></el-table-column>
       <el-table-column label="题型" prop="type" :formatter="formatter"></el-table-column>
@@ -68,12 +73,23 @@
         </template>
       </el-table-column>
       <el-table-column label="正确选项" prop="correctAnswer" width="100"></el-table-column>
-      <el-table-column label="操作" width="450px">
+      <el-table-column label="是否必答" width="90">
         <template slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row)">编辑</el-button>
-          <el-button type="info" icon="el-icon-upload" size="mini" @click="uploadImage(scope.row.id)">上传题干图片</el-button>
-          <el-button type="success" icon="el-icon-thumb"  size="mini" @click="watchImage(scope.row.imageName)">查看题干图片</el-button>
-          <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteTopic(scope.row.id)">删除</el-button>
+          <el-switch v-model="scope.row.isMust" @change="topicMustChange(scope.row)">
+          </el-switch>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="250px">
+        <template slot-scope="scope">
+          <el-row>
+            <el-button type="text" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row)">编辑</el-button>
+            <el-button type="text" icon="el-icon-delete" size="mini" @click="deleteTopic(scope.row.id)">删除</el-button>
+            <el-button type="text" icon="el-icon-setting" @click="showSettingPostDialog(scope.row.id)" size="mini">分配岗位</el-button>
+          </el-row>
+          <el-row>
+            <el-button type="text" icon="el-icon-upload" size="mini" @click="uploadImage(scope.row.id)">上传题干图片</el-button>
+            <el-button type="text" icon="el-icon-thumb"  size="mini" @click="watchImage(scope.row.imageName)">查看题干图片</el-button>
+          </el-row>
         </template>
       </el-table-column>
       <el-table-column label="最后更新人" prop="lastOperatorId" width="100"></el-table-column>
@@ -97,7 +113,10 @@
     width="40%" @close="uploadDialogClosed"
   >
     <el-form ref="uploadForm" :model="uploadForm"  label-width="100px">
-      <el-form-item label="产品线和岗位">
+      <el-form-item label="当前工段:">
+        <el-input v-model="currentWorkSectionName" disabled style="width: 100px"></el-input>
+      </el-form-item>
+      <el-form-item label="产品线和岗位:">
         <el-cascader
           :options="options" v-model="selectKeys"
           :props="props"
@@ -163,10 +182,10 @@
       </el-form-item>
     </el-form>
     <!--      底部区域-->
-    <span slot="footer" class="dialog-footer">
+    <span slot="footer">
     <el-button @click="addTopicDialogVisible = false">取 消</el-button>
     <el-button type="primary"  @click="addTopic">确 定</el-button>
-      </span>
+    </span>
   </el-dialog>
   <!-- 编辑题目对话框 -->
   <el-dialog
@@ -302,6 +321,30 @@
     <el-button type="primary"  @click="editTopic">确 定</el-button>
       </span>
   </el-dialog>
+  <!-- 分配岗位对话框 -->
+  <el-dialog
+    title="分配岗位"
+    :visible.sync="settingPostDialogVisible"
+    width="40%" @close="settingPostDialogClosed"
+  >
+    <el-form label-width="100px">
+      <el-form-item label="当前工段:">
+        <el-input v-model="currentWorkSectionName" disabled style="width: 100px"></el-input>
+      </el-form-item>
+      <el-form-item label="产品线和岗位:">
+        <el-cascader
+          :options="options" v-model="selectKeys"
+          :props="props"
+          placeholder="请选择产品线和岗位" style="margin-bottom: 10px"
+          clearable></el-cascader>
+      </el-form-item>
+    </el-form>
+    <!--      底部区域-->
+    <span slot="footer">
+    <el-button @click="settingPostDialogVisible= false">取 消</el-button>
+    <el-button type="primary"  @click="setPosts">确 定</el-button>
+    </span>
+  </el-dialog>
 </div>
 </template>
 
@@ -310,6 +353,8 @@ import config from '../../util/config'
 export default {
   data () {
     return {
+      currentWorkSectionName: '',
+      currentSetRelationsTopicId: 0,
       selectKeys: [],
       props: { multiple: true, expandTrigger: 'hover' },
       options: [],
@@ -319,7 +364,9 @@ export default {
         // 当前的页数
         pageNum: 1,
         // 当前每页显示多少条数据
-        pageSize: 5
+        pageSize: 5,
+        // 题干信息
+        topicDesc: ''
       },
       addForm: {
         topicDesc: '',
@@ -338,6 +385,7 @@ export default {
       watchImgDialogVisible: false,
       addTopicDialogVisible: false,
       editTopicDialogVisible: false,
+      settingPostDialogVisible: false,
       uploadImgPath: '',
       uploadImgPathA: '',
       uploadImgPathB: '',
@@ -368,6 +416,7 @@ export default {
     this.getList()
     this.getAreasInformation()
     this.getProductLines()
+    this.getCurrentWorkSection()
   },
   computed: {
     answer5Exist () {
@@ -405,6 +454,13 @@ export default {
       }
       this.options = res.data
     },
+    async getCurrentWorkSection () {
+      const { data: workSectionRes } = await this.$http.get('admin/workSectionName')
+      if (workSectionRes.status !== 200) {
+        return this.$message.error('未查询到当前管理员所属工段')
+      }
+      this.currentWorkSectionName = workSectionRes.data.workSectionName
+    },
     async getList () {
       const { data: res } = await this.$http.get('topic/topics', { params: this.queryInfo })
       if (res.status !== 200) {
@@ -428,6 +484,26 @@ export default {
         return this.$message.error('您还未登录')
       }
       this.uploadDialogVisible = true
+    },
+    async showSettingPostDialog (topicId) {
+      this.currentSetRelationsTopicId = topicId
+      const { data: res } = await this.$http.get(`topic-post-relation/${topicId}`)
+      if (res.status !== 200) {
+        return this.$message.error('获取该题的岗位分配信息失败!')
+      }
+      this.selectKeys = res.data
+      this.settingPostDialogVisible = true
+    },
+    async setPosts () {
+      const params = new URLSearchParams()
+      params.append('postIds', this.postIds)
+      params.append('topicId', this.currentSetRelationsTopicId)
+      const { data: res } = await this.$http.put('topic-post-relation/update', params)
+      if (res.status !== 200) {
+        return this.$message.error('更新题目与岗位之间的关系失败!')
+      }
+      this.$message.success('更新题目与岗位之间的关系成功!')
+      this.settingPostDialogVisible = false
     },
     showAddDialog () {
       this.addTopicDialogVisible = true
@@ -453,8 +529,15 @@ export default {
       // 清空上传excel导入题目的uploadForm
       this.selectKeys = []
     },
+    settingPostDialogClosed () {
+      this.selectKeys = []
+    },
     beforeUpload () {
       this.uploadForm.postIds = this.postIds
+      if (this.uploadForm.postIds.length === 0) {
+        this.$message.error('你没有选择任何岗位!')
+        return false
+      }
     },
     async afterUpload (response) {
       this.$message.success({ message: response.msg, duration: 10000 })
@@ -565,12 +648,24 @@ export default {
         message: '删除成功!'
       })
       this.getList()
+    },
+    async topicMustChange (topic) {
+      const { data: res } = await this.$http.put('topic/topics', topic)
+      if (res.status !== 200) {
+        topic.isMust = !topic.isMust
+        return this.$message.error('更改题目必答状态失败!')
+      }
+      this.$message.success('更改题目必答状态成功!')
+      await this.getList()
+    },
+    search () {
+      this.queryInfo.pageNum = 1
+      this.getList()
     }
-
   }
 }
 </script>
 
 <style>
-  .el-table__body tr.hover-row>td { background-color: lightskyblue !important; }
+  .el-table__body tr.hover-row>td { background-color: #ffff99 !important; }
 </style>
