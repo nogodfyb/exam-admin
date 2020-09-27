@@ -33,10 +33,6 @@ public class Record implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    /**
-     * 职员id，指向职员表主键
-     */
-    private Integer employeeId;
 
     /**
      * 区域名称
